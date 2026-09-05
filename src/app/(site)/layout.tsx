@@ -58,7 +58,7 @@ export default function SiteLayout({
             <p className="mt-2 text-sm text-muted">
               {suspendedByOperator
                 ? "This salon's online booking is temporarily paused. Please contact them directly, or check back soon."
-                : "This salon is still setting up online booking. Check back soon!"}
+                : "This salon isn't taking online bookings right now. Please check back soon!"}
             </p>
           </div>
         </main>

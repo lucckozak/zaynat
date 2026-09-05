@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   BarChart3,
   CalendarRange,
+  CreditCard,
   LayoutDashboard,
   ListChecks,
   Rocket,
@@ -32,6 +34,7 @@ const NAV: NavItem[] = [
   { href: "/admin/services", label: "Services", icon: Scissors },
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/marketing", label: "Marketing", icon: Tag },
+  { href: "/admin/subscription", label: "Subscription", icon: CreditCard },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
@@ -80,6 +83,12 @@ export default function AdminLayout({
                   site is unavailable and new bookings are disabled; existing
                   data is unaffected. Contact platform support to reactivate.
                 </p>
+                <Link
+                  href="/admin/subscription"
+                  className="mt-1 inline-block font-medium text-warning hover:underline"
+                >
+                  View subscription details →
+                </Link>
               </div>
             </div>
           ) : !live ? (
@@ -91,7 +100,10 @@ export default function AdminLayout({
                   <p className="text-muted">
                     You can customise everything — services, team, branding,
                     settings — but your public booking site only goes live
-                    once you activate your subscription.
+                    once you activate your subscription.{" "}
+                    <Link href="/admin/subscription" className="font-medium text-primary hover:underline">
+                      Manage subscription →
+                    </Link>
                   </p>
                 </div>
               </div>
