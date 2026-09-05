@@ -38,7 +38,9 @@ export default function RegisterSalonPage() {
   const [emirate, setEmirate] = useState<Emirate>("Dubai");
   const [city, setCity] = useState("Dubai");
   const [area, setArea] = useState("");
-  const [presetId, setPresetId] = useState(SALON_PRESETS[0].id);
+  // No template picker in this flow anymore — every self-registered salon
+  // starts from the same default preset and is fully editable afterwards.
+  const presetId = SALON_PRESETS[0].id;
   const [plan, setPlan] = useState<SubscriptionPlanId>("starter");
   const [agreed, setAgreed] = useState(false);
 
@@ -171,41 +173,6 @@ export default function RegisterSalonPage() {
                 <Field label="Area">
                   <Input value={area} onChange={(e) => setArea(e.target.value)} placeholder="Jumeirah" />
                 </Field>
-              </div>
-            </CardBody>
-          </Card>
-
-          <Card>
-            <CardBody className="space-y-3">
-              <h2 className="text-sm font-semibold text-foreground">Starting look</h2>
-              <p className="text-xs text-muted">
-                Seeds your salon with a ready-made service menu, team and branding — everything is editable afterwards from Settings.
-              </p>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {SALON_PRESETS.map((p) => {
-                  const active = p.id === presetId;
-                  return (
-                    <button
-                      type="button"
-                      key={p.id}
-                      onClick={() => setPresetId(p.id)}
-                      className={cn(
-                        "flex items-start gap-2.5 rounded-xl border px-3 py-2.5 text-left transition-colors",
-                        active ? "border-primary bg-primary-soft/50" : "border-border hover:border-primary/40",
-                      )}
-                    >
-                      <span
-                        className="mt-1 h-3 w-3 shrink-0 rounded-full ring-2 ring-white"
-                        style={{ background: p.theme.primary }}
-                      />
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-medium text-foreground">{p.label}</span>
-                        <span className="block truncate text-xs text-muted">{p.blurb}</span>
-                      </span>
-                      {active ? <Check size={15} className="mt-0.5 shrink-0 text-primary" /> : null}
-                    </button>
-                  );
-                })}
               </div>
             </CardBody>
           </Card>
