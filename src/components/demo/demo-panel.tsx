@@ -2,17 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import {
-  Check,
-  Copy,
-  PlusCircle,
-  RotateCcw,
-  ShieldCheck,
-  Sparkles,
-  Store,
-  UserRound,
-  X,
-} from "lucide-react";
+import { Sparkles, UserRound, X } from "lucide-react";
 import type { Role } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
@@ -32,25 +22,18 @@ const ROLE_LABEL: Record<Role, string> = {
   ADMIN: "Admin",
 };
 
-function appRoot() {
-  if (typeof window === "undefined") return "";
-  // salon storefronts live at /site (the bare "/" is the platform's own
-  // marketing homepage) — a share link should land on the salon, not there.
-  return `${window.location.origin}/site/`;
-}
-
 export function DemoPanel() {
-  const { hydrated, resetAll } = useStore();
+  const { hydrated } = useStore();
   const { role, viewAs } = useAuth();
-  const { salonId, tenant, tenants, switchActiveSalon } = useTenant();
+  const { tenant } = useTenant();
   const router = useRouter();
   const pathname = usePathname();
   const toast = useToast();
   const [open, setOpen] = useState(false);
   const [hidden, setHidden] = useState(true);
 
-  // This is prototype tooling for switching between simulated salon
-  // tenants — it has no place on the platform's own marketing site, the
+  // This is prototype tooling for previewing a salon's site as a different
+  // role — it has no place on the platform's own marketing site, the
   // (not-yet-built) marketplace, or the Super Admin console, which are not
   // scoped to any one salon.
   const onSalonRoute =
@@ -82,31 +65,6 @@ export function DemoPanel() {
     }
   }
 
-  function pickSalon(id: string) {
-    if (id === salonId) {
-      setOpen(false);
-      return;
-    }
-    switchActiveSalon(id);
-    // each tenant remembers its own last session (see src/lib/auth.tsx), so
-    // this either restores whoever was signed in there before or lands
-    // logged-out on that salon's public site — no manual re-attach needed.
-    router.push("/site");
-    const label = tenants.find((t) => t.id === id)?.label ?? "salon";
-    toast.success(`Switched to ${label}`);
-    setOpen(false);
-  }
-
-  async function copyShareLink() {
-    const url = `${appRoot()}?salon=${tenant?.slug ?? salonId}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success("Share link copied", url);
-    } catch {
-      toast.info("Share link", url);
-    }
-  }
-
   return (
     <div className="fixed bottom-[4.75rem] left-4 z-[70] md:bottom-4">
       {open ? (
@@ -117,8 +75,7 @@ export function DemoPanel() {
                 Demo controls
               </p>
               <p className="text-xs text-muted">
-                Simulated multi-tenant demo — each salon below has its own
-                isolated data.
+                Preview this salon's site as a different role.
               </p>
             </div>
             <button
@@ -150,78 +107,6 @@ export function DemoPanel() {
                 </button>
               ))}
             </div>
-
-            <p className="mb-1.5 mt-4 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted">
-              <Store size={12} /> Salon (tenant)
-            </p>
-            <div className="space-y-1.5">
-              {tenants.map((t) => {
-                const active = t.id === salonId;
-                return (
-                  <button
-                    key={t.id}
-                    onClick={() => pickSalon(t.id)}
-                    className={cn(
-                      "flex w-full items-center gap-2.5 rounded-xl border px-3 py-2 text-left transition-colors",
-                      active
-                        ? "border-primary bg-primary-soft/50"
-                        : "border-border bg-surface hover:border-primary/40",
-                    )}
-                  >
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-medium text-foreground">
-                        {t.label}
-                      </span>
-                      <span className="block truncate text-xs text-muted">
-                        {t.emirate} · {t.subscriptionPlan}
-                        {t.suspension.suspended ? " · suspended" : ""}
-                      </span>
-                    </span>
-                    {active ? (
-                      <Check size={15} className="shrink-0 text-primary" />
-                    ) : null}
-                  </button>
-                );
-              })}
-              <button
-                onClick={() => {
-                  setOpen(false);
-                  router.push("/super-admin/salons/new");
-                }}
-                className="flex w-full items-center gap-2.5 rounded-xl border border-dashed border-border px-3 py-2 text-left text-sm text-muted transition-colors hover:border-primary/40 hover:text-foreground"
-              >
-                <PlusCircle size={15} className="shrink-0" />
-                Create a new salon…
-              </button>
-            </div>
-
-            <div className="mt-4 flex items-center gap-2 border-t border-border pt-3">
-              <button
-                onClick={copyShareLink}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-border px-2 py-1.5 text-xs font-medium text-foreground hover:border-primary/50"
-              >
-                <Copy size={13} /> Copy share link
-              </button>
-              <button
-                onClick={() => {
-                  resetAll();
-                  toast.success("Sample data reset");
-                  setOpen(false);
-                }}
-                className="flex items-center justify-center gap-1.5 rounded-lg border border-border px-2 py-1.5 text-xs font-medium text-danger hover:border-danger/50"
-              >
-                <RotateCcw size={13} /> Reset
-              </button>
-            </div>
-            <button
-              onClick={() => {
-                setOpen(false);
-                router.push("/super-admin");
-              }}
-              className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg border border-border px-2 py-1.5 text-xs font-medium text-foreground hover:border-primary/50"
-            >
-              <ShieldCheck size={13} /> Platform Super Admin
-            </button>
           </div>
         </div>
       ) : null}
