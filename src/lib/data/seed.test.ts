@@ -39,3 +39,23 @@ describe("loadDatabase / saveDatabase versioning", () => {
     expect(loadDatabase("salon_b")?.settings.presetId).toBe("maison");
   });
 });
+
+describe("generateSeedDatabase admin notifications", () => {
+  it("backfills notifications matching real seeded appointments, newest first", () => {
+    const db = generateSeedDatabase(new Date("2024-01-01"), "maison");
+    expect(db.adminNotifications.length).toBeGreaterThan(0);
+
+    const timestamps = db.adminNotifications.map((n) => +new Date(n.createdAt));
+    expect(timestamps).toEqual([...timestamps].sort((a, b) => b - a));
+
+    for (const n of db.adminNotifications) {
+      const appt = db.appointments.find((a) => a.id === n.appointmentId);
+      expect(appt).toBeDefined();
+      expect(n.kind).toBe(appt?.status === "CANCELLED" ? "CANCELLED" : "NEW_BOOKING");
+    }
+
+    // A believable inbox: not literally everything is unread.
+    expect(db.adminNotifications.some((n) => n.read)).toBe(true);
+    expect(db.adminNotifications.some((n) => !n.read)).toBe(true);
+  });
+});

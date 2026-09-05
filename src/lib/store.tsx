@@ -10,6 +10,7 @@ import {
   useState,
 } from "react";
 import type {
+  AdminNotification,
   Appointment,
   AppointmentStatus,
   Coupon,
@@ -106,6 +107,10 @@ interface StoreValue {
   }) => { ok: boolean; error?: string };
   /** Admin-only moderation: hide/unhide a review from every public rating/list. Never edits its content. */
   setReviewVisibility: (reviewId: string, visible: boolean) => void;
+
+  // admin notification centre
+  markNotificationRead: (id: string) => void;
+  markAllNotificationsRead: () => void;
 
   // services
   saveService: (svc: Service) => void;
@@ -207,6 +212,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       ].slice(0, 60);
     };
 
+    const MAX_NOTIFICATIONS = 100;
+    const pushAdminNotification = (
+      d: Database,
+      notif: Omit<AdminNotification, "id" | "createdAt" | "read">,
+    ) => {
+      d.adminNotifications = [
+        { ...notif, id: uid("notif"), createdAt: new Date().toISOString(), read: false },
+        ...d.adminNotifications,
+      ].slice(0, MAX_NOTIFICATIONS);
+    };
+
     const notifyBooking = (d: Database, appt: Appointment, kind: EmailMessage["kind"]) => {
       const customer = d.users.find((u) => u.id === appt.customerId);
       const service = d.services.find((s) => s.id === appt.serviceId);
@@ -219,6 +235,24 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           : kind === "RESCHEDULE"
             ? "rescheduled"
             : "confirmed";
+
+      // The admin's own notification centre — always fires, regardless of
+      // the `notifications.adminNewBooking` email preference below (that
+      // toggle is specifically about the stubbed *email*, not this).
+      pushAdminNotification(d, {
+        kind: kind === "CANCELLATION" ? "CANCELLED" : kind === "RESCHEDULE" ? "RESCHEDULED" : "NEW_BOOKING",
+        title:
+          kind === "CANCELLATION"
+            ? "Booking cancelled"
+            : kind === "RESCHEDULE"
+              ? "Booking rescheduled"
+              : "New booking",
+        body: `${customer?.firstName ?? "A client"} ${customer?.lastName ?? ""} · ${
+          service?.name ?? "Treatment"
+        } · ${empUser?.firstName ?? "unassigned"} · ${when}`,
+        appointmentId: appt.id,
+      });
+
       const emails: Omit<EmailMessage, "id" | "sentAt">[] = [];
       const s = d.settings.notifications;
       if (customer && (s.customerConfirmation || kind !== "BOOKING_CONFIRMATION")) {
@@ -443,6 +477,20 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         mutate((prev) => ({
           ...prev,
           reviews: prev.reviews.map((r) => (r.id === reviewId ? { ...r, visible } : r)),
+        })),
+
+      markNotificationRead: (id) =>
+        mutate((prev) => ({
+          ...prev,
+          adminNotifications: prev.adminNotifications.map((n) =>
+            n.id === id ? { ...n, read: true } : n,
+          ),
+        })),
+
+      markAllNotificationsRead: () =>
+        mutate((prev) => ({
+          ...prev,
+          adminNotifications: prev.adminNotifications.map((n) => ({ ...n, read: true })),
         })),
 
       saveService: (svc) =>
@@ -770,6 +818,7 @@ const EMPTY: Database = {
   coupons: [],
   giftCards: [],
   reviews: [],
+  adminNotifications: [],
   settings: {
     name: "",
     tagline: "",

@@ -1,4 +1,5 @@
 import type {
+  AdminNotification,
   Appointment,
   AppointmentStatus,
   Database,
@@ -36,7 +37,7 @@ import { getPreset, type SalonPreset } from "./presets";
 // `reviews`) — a mismatch makes loadDatabase() return null so every
 // tenant regenerates fresh seed data instead of crashing on old,
 // now-incomplete cached JSON.
-const STORAGE_VERSION = 9;
+const STORAGE_VERSION = 10;
 
 const ADMIN_USER = STAFF_USERS.find((u) => u.role === "ADMIN")!;
 
@@ -178,6 +179,7 @@ export function emptyDatabase(presetId?: string): Database {
     coupons: [],
     giftCards: [],
     reviews: [],
+    adminNotifications: [],
   };
 }
 
@@ -339,6 +341,7 @@ export function generateSeedDatabase(
   seedPromotions(db, now);
   db.emailLog = seedEmailLog(db, now);
   db.reviews = seedReviews(db, rnd);
+  db.adminNotifications = seedAdminNotifications(db, now, rnd);
   return db;
 }
 
@@ -458,6 +461,44 @@ const REVIEW_COMMENTS = [
   undefined, // a plain star rating with no written comment, same as real life
   undefined,
 ];
+
+/**
+ * Backfills the admin notification centre with the most recent real
+ * appointment-lifecycle events already in `db.appointments`, using the
+ * exact same title/body shape `notifyBooking` (store.tsx) generates for
+ * a genuine new booking/cancellation going forward — same demo-data
+ * posture as `seedReviews`, not a separate mocked-up feed. The oldest
+ * few are marked read so the unread badge shows a believable count
+ * rather than "everything that ever happened."
+ */
+function seedAdminNotifications(db: Database, now: Date, rnd: () => number): AdminNotification[] {
+  const recent = [...db.appointments]
+    .filter((a) => a.status !== "PENDING" || new Date(a.createdAt) <= now)
+    .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))
+    .slice(0, 12);
+
+  const notifications = recent.map((appt, i) => {
+    const customer = db.users.find((u) => u.id === appt.customerId);
+    const service = db.services.find((s) => s.id === appt.serviceId);
+    const employee = db.employees.find((e) => e.id === appt.employeeId);
+    const empUser = employee && db.users.find((u) => u.id === employee.userId);
+    const when = new Date(appt.start).toLocaleString();
+    const cancelled = appt.status === "CANCELLED";
+    return {
+      id: `notif_seed_${i + 1}`,
+      kind: (cancelled ? "CANCELLED" : "NEW_BOOKING") as AdminNotification["kind"],
+      title: cancelled ? "Booking cancelled" : "New booking",
+      body: `${customer?.firstName ?? "A client"} ${customer?.lastName ?? ""} · ${
+        service?.name ?? "Treatment"
+      } · ${empUser?.firstName ?? "unassigned"} · ${when}`,
+      appointmentId: appt.id,
+      createdAt: appt.createdAt,
+      // the newest handful stay unread, same as a real inbox
+      read: i >= 4 || rnd() < 0.3,
+    };
+  });
+  return notifications;
+}
 
 /**
  * A handful of real-shaped reviews for the demo's own completed

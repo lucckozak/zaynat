@@ -24,6 +24,7 @@ import {
   type NavItem,
 } from "@/components/layout/dashboard-shell";
 import { LocationSwitcher } from "@/components/layout/location-switcher";
+import { NotificationBell } from "@/components/layout/notification-bell";
 import { useAuth, sessionKey } from "@/lib/auth";
 import { useTenant } from "@/lib/tenant";
 import { getTenantMeta, reactivateTenant } from "@/lib/tenants";
@@ -126,6 +127,7 @@ export default function AdminLayout({
         <DashboardShell
           nav={NAV}
           area="Admin"
+          notificationCenter={<NotificationBell />}
           locationSwitcher={
             locations.length > 1 ? (
               <LocationSwitcher

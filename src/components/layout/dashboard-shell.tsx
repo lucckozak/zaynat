@@ -21,12 +21,15 @@ export function DashboardShell({
   nav,
   area,
   locationSwitcher,
+  notificationCenter,
   children,
 }: {
   nav: NavItem[];
   area: string;
   /** rendered under the brand mark — see `admin/layout.tsx` + `LocationSwitcher`; omitted entirely for a single-location owner */
   locationSwitcher?: React.ReactNode;
+  /** rendered in the mobile header and in its own slim desktop bar — see `admin/layout.tsx` + `NotificationBell` */
+  notificationCenter?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -141,7 +144,14 @@ export function DashboardShell({
           <span className="text-xs font-medium uppercase tracking-wide text-accent">
             {area}
           </span>
+          {notificationCenter ? <div className="ml-auto">{notificationCenter}</div> : null}
         </header>
+
+        {notificationCenter ? (
+          <div className="sticky top-0 z-30 hidden justify-end border-b border-border bg-background/85 px-4 py-2 backdrop-blur-md lg:flex lg:px-6">
+            {notificationCenter}
+          </div>
+        ) : null}
 
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-5 sm:px-6 sm:py-8 lg:py-10">
           {children}

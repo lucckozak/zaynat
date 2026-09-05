@@ -151,7 +151,7 @@ export default function AdminDashboard() {
 
         <div className="min-w-0">
           <h2 className="mb-3 text-base font-medium text-foreground sm:text-lg">
-            Notification log
+            Email log
           </h2>
           <Card>
             <CardBody className="space-y-3">
