@@ -74,6 +74,9 @@ export interface TenantMeta {
   marketplace: {
     visible: boolean;
     featured: boolean;
+    /** approximate pin for "nearest to me" marketplace sorting; optional — a salon with no pin just can't be distance-sorted */
+    lat?: number;
+    lng?: number;
   };
   contract: {
     status: "unsigned" | "signed" | "cancelled";

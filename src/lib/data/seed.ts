@@ -524,13 +524,21 @@ function hashString(s: string): number {
  * `src/lib/tenants.ts`.
  * ------------------------------------------------------------------ */
 
-const VERSION_KEY = "platform:version";
 const dbKey = (salonId: string) => `platform:db:${salonId}`;
+// Versioned per-tenant, not globally — this used to be one shared
+// `platform:version` key, which was a real bug: the moment ANY one
+// tenant got re-saved under a new STORAGE_VERSION, that single global
+// flag flipped for every OTHER tenant too, so their still-stale blobs
+// (missing whatever field just got added, e.g. `reviews`) would pass the
+// version check and be returned as-is instead of triggering a reseed.
+// Found this via the /find marketplace page, the first code path to
+// loadDatabase() more than one tenant at once.
+const dbVersionKey = (salonId: string) => `platform:db:${salonId}:version`;
 
 export function loadDatabase(salonId: string): Database | null {
   if (typeof window === "undefined") return null;
   try {
-    const version = Number(window.localStorage.getItem(VERSION_KEY));
+    const version = Number(window.localStorage.getItem(dbVersionKey(salonId)));
     if (version !== STORAGE_VERSION) return null;
     const raw = window.localStorage.getItem(dbKey(salonId));
     if (!raw) return null;
@@ -544,7 +552,7 @@ export function saveDatabase(salonId: string, db: Database) {
   if (typeof window === "undefined") return;
   try {
     window.localStorage.setItem(dbKey(salonId), JSON.stringify(db));
-    window.localStorage.setItem(VERSION_KEY, String(STORAGE_VERSION));
+    window.localStorage.setItem(dbVersionKey(salonId), String(STORAGE_VERSION));
   } catch {
     /* ignore quota / privacy-mode errors */
   }
@@ -554,4 +562,5 @@ export function saveDatabase(salonId: string, db: Database) {
 export function resetDatabase(salonId: string) {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(dbKey(salonId));
+  window.localStorage.removeItem(dbVersionKey(salonId));
 }

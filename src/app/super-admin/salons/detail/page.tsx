@@ -272,7 +272,7 @@ function SalonDetailInner() {
                 refresh();
               }}
               label="Visible in marketplace"
-              description="Shows this salon in public search (marketplace UI is a later phase)."
+              description="Shows this salon in public search at /find."
             />
             <Switch
               checked={meta.marketplace.featured}
@@ -282,6 +282,37 @@ function SalonDetailInner() {
               }}
               label="Featured"
             />
+            <div className="grid gap-3 border-t border-border pt-3 sm:grid-cols-2">
+              <Field
+                label="Latitude"
+                hint="Optional — enables 'Nearest to me' sorting in the marketplace."
+              >
+                <Input
+                  type="number"
+                  step="any"
+                  value={meta.marketplace.lat ?? ""}
+                  onChange={(e) => {
+                    const lat = e.target.value === "" ? undefined : Number(e.target.value);
+                    updateTenantMeta(salonId, { marketplace: { ...meta.marketplace, lat } });
+                    refresh();
+                  }}
+                  placeholder="25.2048"
+                />
+              </Field>
+              <Field label="Longitude">
+                <Input
+                  type="number"
+                  step="any"
+                  value={meta.marketplace.lng ?? ""}
+                  onChange={(e) => {
+                    const lng = e.target.value === "" ? undefined : Number(e.target.value);
+                    updateTenantMeta(salonId, { marketplace: { ...meta.marketplace, lng } });
+                    refresh();
+                  }}
+                  placeholder="55.2708"
+                />
+              </Field>
+            </div>
           </CardBody>
         </Card>
 
