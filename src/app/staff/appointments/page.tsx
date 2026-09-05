@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CalendarX2, CheckCircle2, XCircle } from "lucide-react";
+import { CalendarX2, CheckCircle2, Plus, XCircle } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { useCurrentEmployee } from "@/lib/use-current-employee";
 import {
@@ -14,6 +14,7 @@ import { PageHeading } from "@/components/layout/dashboard-shell";
 import { Segmented, EmptyState } from "@/components/ui/misc";
 import { Button } from "@/components/ui/button";
 import { AppointmentCard } from "@/components/appointments/appointment-card";
+import { AppointmentEditorDialog } from "@/components/appointments/appointment-editor-dialog";
 import { useToast } from "@/components/ui/toast";
 import type { AppointmentStatus } from "@/lib/types";
 import { STATUS_LABELS } from "@/lib/types";
@@ -24,6 +25,8 @@ export default function StaffAppointmentsPage() {
   const toast = useToast();
   const [tab, setTab] = useState<"upcoming" | "past">("upcoming");
   const [status, setStatus] = useState<AppointmentStatus | "ALL">("ALL");
+  const [editorId, setEditorId] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
 
   const list = useMemo(() => {
     if (!employee) return [];
@@ -41,6 +44,11 @@ export default function StaffAppointmentsPage() {
       <PageHeading
         title="Appointments"
         description="Your bookings and their customer details."
+        action={
+          <Button size="sm" onClick={() => setCreating(true)}>
+            <Plus size={15} /> New appointment
+          </Button>
+        }
       />
 
       <div className="mb-6 flex flex-wrap items-center gap-3">
@@ -88,38 +96,54 @@ export default function StaffAppointmentsPage() {
                 perspective="staff"
                 currency={db.settings.currency}
                 actions={
-                  a.status === "CONFIRMED" || a.status === "PENDING" ? (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={!started}
-                        onClick={() => {
-                          setAppointmentStatus(a.id, "COMPLETED");
-                          toast.success("Marked completed");
-                        }}
-                      >
-                        <CheckCircle2 size={14} /> Complete
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={!started}
-                        onClick={() => {
-                          setAppointmentStatus(a.id, "NO_SHOW");
-                          toast.info("Marked as no-show");
-                        }}
-                      >
-                        <XCircle size={14} /> No-show
-                      </Button>
-                    </>
-                  ) : null
+                  <>
+                    {a.status === "CONFIRMED" || a.status === "PENDING" ? (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={!started}
+                          onClick={() => {
+                            setAppointmentStatus(a.id, "COMPLETED");
+                            toast.success("Marked completed");
+                          }}
+                        >
+                          <CheckCircle2 size={14} /> Complete
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={!started}
+                          onClick={() => {
+                            setAppointmentStatus(a.id, "NO_SHOW");
+                            toast.info("Marked as no-show");
+                          }}
+                        >
+                          <XCircle size={14} /> No-show
+                        </Button>
+                      </>
+                    ) : null}
+                    <Button variant="ghost" size="sm" onClick={() => setEditorId(a.id)}>
+                      Details
+                    </Button>
+                  </>
                 }
               />
             );
           })}
         </div>
       )}
+
+      <AppointmentEditorDialog
+        open={!!editorId}
+        appointmentId={editorId}
+        onClose={() => setEditorId(null)}
+      />
+      <AppointmentEditorDialog
+        open={creating}
+        presets={{ employeeId: employee.id }}
+        onClose={() => setCreating(false)}
+      />
     </div>
   );
 }

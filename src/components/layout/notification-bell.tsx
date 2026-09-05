@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Bell, CalendarCheck, CalendarClock, CalendarX, Check } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Bell, CalendarCheck, CalendarClock, CalendarX, Check, ChevronRight } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { fmt } from "@/lib/time";
 import { cn } from "@/lib/utils";
@@ -30,11 +31,18 @@ const KIND_TONE: Record<AdminNotification["kind"], string> = {
  */
 export function NotificationBell() {
   const { db, markNotificationRead, markAllNotificationsRead } = useStore();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
   const notifications = db.adminNotifications;
   const unreadCount = notifications.filter((n) => !n.read).length;
+
+  function openNotification(n: AdminNotification) {
+    markNotificationRead(n.id);
+    setOpen(false);
+    if (n.appointmentId) router.push(`/admin/appointments?id=${n.appointmentId}`);
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -84,7 +92,7 @@ export function NotificationBell() {
                 return (
                   <button
                     key={n.id}
-                    onClick={() => markNotificationRead(n.id)}
+                    onClick={() => openNotification(n)}
                     className={cn(
                       "flex w-full items-start gap-3 border-b border-border px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-surface-sunken",
                       !n.read && "bg-primary-soft/20",
@@ -108,6 +116,9 @@ export function NotificationBell() {
                       <span className="mt-0.5 block truncate text-xs text-muted">{n.body}</span>
                       <span className="mt-0.5 block text-[11px] text-muted">{fmt.timeAgo(n.createdAt)}</span>
                     </span>
+                    {n.appointmentId ? (
+                      <ChevronRight size={15} className="mt-1 shrink-0 text-muted" />
+                    ) : null}
                   </button>
                 );
               })

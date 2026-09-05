@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { Download, Plus, SlidersHorizontal, X } from "lucide-react";
 import { useStore } from "@/lib/store";
 import type { AppointmentStatus } from "@/lib/types";
@@ -13,10 +14,17 @@ import { Field, Input, Select } from "@/components/ui/field";
 import { AppointmentsTable } from "@/components/appointments/appointments-table";
 import { AppointmentEditorDialog } from "@/components/appointments/appointment-editor-dialog";
 
-export default function AdminAppointmentsPage() {
+function AdminAppointmentsInner() {
   const { db } = useStore();
-  const [editorId, setEditorId] = useState<string | null>(null);
+  // Deep link from the notification centre (?id=<appointmentId>) — opens
+  // straight into that appointment's editor.
+  const deepLinkId = useSearchParams().get("id");
+  const [editorId, setEditorId] = useState<string | null>(deepLinkId);
   const [creating, setCreating] = useState(false);
+
+  useEffect(() => {
+    if (deepLinkId) setEditorId(deepLinkId);
+  }, [deepLinkId]);
 
   const [date, setDate] = useState("");
   const [employeeId, setEmployeeId] = useState("");
@@ -233,5 +241,13 @@ export default function AdminAppointmentsPage() {
         onClose={() => setCreating(false)}
       />
     </div>
+  );
+}
+
+export default function AdminAppointmentsPage() {
+  return (
+    <Suspense fallback={null}>
+      <AdminAppointmentsInner />
+    </Suspense>
   );
 }
