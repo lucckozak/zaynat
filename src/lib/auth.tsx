@@ -17,7 +17,7 @@ import { useTenant } from "./tenant";
  * out any prior session (a different key is read) — no separate staleness
  * check needed.
  */
-const sessionKey = (salonId: string) => `platform:session:${salonId}`;
+export const sessionKey = (salonId: string) => `platform:session:${salonId}`;
 
 interface SignUpInput {
   firstName: string;

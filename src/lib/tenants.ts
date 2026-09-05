@@ -1,5 +1,5 @@
 import type { Emirate, SubscriptionPlanId, TenantMeta } from "./types";
-import { generateSeedDatabase, resetDatabase, saveDatabase } from "./data/seed";
+import { generateSeedDatabase, loadDatabase, resetDatabase, saveDatabase } from "./data/seed";
 import { getPreset } from "./data/presets";
 import { uid } from "./utils";
 
@@ -111,9 +111,57 @@ export function createTenant(input: CreateTenantInput): TenantMeta {
   tenants.push(meta);
   writeIndex(tenants);
 
-  saveDatabase(id, generateSeedDatabase(now, preset.id));
+  // The preset only supplies a starting catalog/team/branding — the actual
+  // salon name the owner typed must win over whatever demo name the preset
+  // shipped with (e.g. "Maison Lumière"), or every new salon displays the
+  // wrong name everywhere (header, dashboard, login) until someone notices
+  // and fixes it by hand in Settings.
+  const db = generateSeedDatabase(now, preset.id);
+  db.settings.name = input.label;
+  saveDatabase(id, db);
 
   return meta;
+}
+
+export interface RegisterSalonInput extends CreateTenantInput {
+  ownerFirstName: string;
+  ownerLastName: string;
+  ownerEmail: string;
+  ownerPhone: string;
+  ownerPassword: string;
+}
+
+/**
+ * Self-service salon signup: creates a tenant exactly like `createTenant`,
+ * then replaces the seeded demo admin account with the owner's own login —
+ * the whole reason this is a separate function rather than something a
+ * caller bolts on afterwards is that patching the admin user must happen
+ * before anyone can sign in with the credentials they just typed.
+ */
+export function registerSalon(input: RegisterSalonInput): {
+  meta: TenantMeta;
+  adminUserId: string | null;
+} {
+  const { ownerFirstName, ownerLastName, ownerEmail, ownerPhone, ownerPassword, ...tenantInput } =
+    input;
+  const meta = createTenant(tenantInput);
+
+  const db = loadDatabase(meta.id);
+  let adminUserId: string | null = null;
+  if (db) {
+    const admin = db.users.find((u) => u.role === "ADMIN");
+    if (admin) {
+      admin.firstName = ownerFirstName;
+      admin.lastName = ownerLastName;
+      admin.email = ownerEmail;
+      admin.phone = ownerPhone;
+      admin.password = ownerPassword;
+      adminUserId = admin.id;
+      saveDatabase(meta.id, db);
+    }
+  }
+
+  return { meta, adminUserId };
 }
 
 export function suspendTenant(salonId: string, reason: string): TenantMeta | null {
@@ -135,7 +183,9 @@ export function reseedTenant(salonId: string): void {
   const meta = getTenantMeta(salonId);
   if (!meta) return;
   resetDatabase(salonId);
-  saveDatabase(salonId, generateSeedDatabase(new Date(), meta.presetId));
+  const db = generateSeedDatabase(new Date(), meta.presetId);
+  db.settings.name = meta.label; // same fix as createTenant — don't revert to the preset's demo name
+  saveDatabase(salonId, db);
 }
 
 export function getActiveSalonId(): string | null {
