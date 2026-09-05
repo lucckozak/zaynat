@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import {
+  BadgePercent,
   BarChart3,
   CalendarCheck2,
   FileDown,
+  Flag,
   Globe2,
+  Languages,
+  LayoutTemplate,
   Link2,
   ShieldAlert,
   ShieldCheck,
@@ -31,8 +35,31 @@ export const metadata: Metadata = {
   // template would append the name to a second time).
   title: { absolute: `${BRAND_NAME} — booking software for UAE salons` },
   description:
-    "Zaynat is booking software for UAE salons: your own branded booking site, a real calendar, staff scheduling and client management — no booking commission, ever.",
+    "Zaynat is booking software built in the UAE for UAE salons: your own branded site and domain, Arabic + English out of the box, and zero commission on your bookings — ever.",
 };
+
+const DIFFERENTIATORS = [
+  {
+    icon: BadgePercent,
+    title: "Zero commission, ever",
+    body: "Some booking platforms undercut you on price, then make it back by taking a cut of every card payment your clients make. Zaynat doesn't take a percentage of your revenue on any plan.",
+  },
+  {
+    icon: LayoutTemplate,
+    title: "Your own site, your own domain",
+    body: "Not a listing on someone else's marketplace. A real website at your own address — yoursalon.ae if you want it — that looks like your salon, not a template with your name slotted in.",
+  },
+  {
+    icon: Languages,
+    title: "Arabic, done properly",
+    body: "Full Arabic and right-to-left support for your customers' booking site, not a bolted-on translation. Genuinely rare in salon software — and it's there from day one.",
+  },
+  {
+    icon: Flag,
+    title: "Made in the UAE, for the UAE",
+    body: "Built around how salons here actually run — not a global platform that treats your salon as one listing among millions.",
+  },
+];
 
 const FEATURES = [
   {
@@ -114,7 +141,7 @@ export default function MarketingHomePage() {
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
             <div className="mx-auto max-w-2xl text-center">
               <Badge tone="primary" className="mx-auto mb-5">
-                <Sparkles size={13} /> Built for salons across the UAE
+                <Sparkles size={13} /> Made in the UAE, for the UAE
               </Badge>
               <h1 className="font-brand text-4xl font-bold leading-[1.05] tracking-tight text-foreground sm:text-6xl">
                 Booking software for UAE salons
@@ -141,6 +168,33 @@ export default function MarketingHomePage() {
                 <span>Live in minutes</span>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Why Zaynat */}
+        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+          <SectionTitle
+            eyebrow="Why Zaynat"
+            title="What actually makes this different"
+            align="center"
+          />
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {DIFFERENTIATORS.map((d) => (
+              <div
+                key={d.title}
+                className="rounded-2xl border border-primary/15 bg-primary-soft/30 p-5"
+              >
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                  <d.icon size={18} />
+                </div>
+                <h3 className="font-brand text-[15px] font-semibold text-foreground">
+                  {d.title}
+                </h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-strong">
+                  {d.body}
+                </p>
+              </div>
+            ))}
           </div>
         </section>
 
