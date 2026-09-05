@@ -1,18 +1,23 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, Ban, Building2, Clock, TrendingUp } from "lucide-react";
+import { AlertTriangle, Ban, Bug, Building2, Clock, TrendingUp, Trash2 } from "lucide-react";
 import { useTenant } from "@/lib/tenant";
 import { listAuditLog } from "@/lib/audit-log";
+import { clearErrors, listErrors } from "@/lib/error-log";
 import { getSubscriptionPlan } from "@/lib/subscription-plans";
 import { PageHeading } from "@/components/layout/dashboard-shell";
 import { Card, CardBody } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { EmptyState, Stat } from "@/components/ui/misc";
 import { Badge } from "@/components/ui/badge";
 
+const SENTRY_CONFIGURED = Boolean(process.env.NEXT_PUBLIC_SENTRY_DSN);
+
 export default function SuperAdminDashboardPage() {
   const { tenants } = useTenant();
+  const [errors, setErrors] = useState(() => listErrors());
 
   const kpis = useMemo(() => {
     const now = new Date();
@@ -113,6 +118,51 @@ export default function SuperAdminDashboardPage() {
                     </p>
                     {a.reason ? <p className="text-xs text-muted">Reason: {a.reason}</p> : null}
                     <p className="text-xs text-muted">{new Date(a.at).toLocaleString()}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardBody>
+        </Card>
+
+        <Card className="lg:col-span-2">
+          <CardBody>
+            <div className="mb-1 flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-foreground">
+                Errors {SENTRY_CONFIGURED ? "" : "(this browser)"}
+              </h3>
+              {errors.length > 0 ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    clearErrors();
+                    setErrors([]);
+                  }}
+                >
+                  <Trash2 size={13} /> Clear
+                </Button>
+              ) : null}
+            </div>
+            <p className="mb-3 text-xs text-muted">
+              {SENTRY_CONFIGURED
+                ? "Sentry is configured — real errors from every visitor's browser are reported there, not just here."
+                : "No Sentry DSN configured (NEXT_PUBLIC_SENTRY_DSN) — this list only ever shows errors that happened in this browser, not across every visitor. Set a DSN before deploying for real cross-device error tracking."}
+            </p>
+            {errors.length === 0 ? (
+              <EmptyState
+                icon={<Bug size={18} />}
+                title="No errors logged in this browser"
+                description="Uncaught exceptions and rejected promises show up here automatically."
+              />
+            ) : (
+              <ul className="max-h-72 space-y-2 overflow-y-auto">
+                {errors.slice(0, 20).map((e) => (
+                  <li key={e.id} className="rounded-xl border border-danger/30 bg-danger-soft/30 px-3.5 py-2.5 text-sm">
+                    <p className="font-medium text-foreground">{e.message}</p>
+                    <p className="text-xs text-muted">
+                      {new Date(e.at).toLocaleString()} · {e.url}
+                    </p>
                   </li>
                 ))}
               </ul>

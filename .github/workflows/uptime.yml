@@ -1,0 +1,26 @@
+name: Uptime check
+
+# Free, real uptime monitoring for the GitHub Pages site — no third-party
+# account needed. Runs on GitHub's own schedule, fails the job if the
+# live site doesn't respond with 200, and GitHub emails the repo owner
+# automatically on a failing run right after a passing one (its default
+# notification behavior for scheduled workflows) — an actual alert, not
+# just a log nobody reads.
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping the live site
+        run: |
+          url="https://lucckozak.github.io/zaynat/"
+          status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "$url")
+          echo "Got HTTP $status from $url"
+          if [ "$status" -ne 200 ]; then
+            echo "::error::Site returned HTTP $status, expected 200"
+            exit 1
+          fi

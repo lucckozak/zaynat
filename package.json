@@ -12,6 +12,7 @@
     "deploy": "next build && gh-pages -d out --dotfiles"
   },
   "dependencies": {
+    "@sentry/browser": "^9.47.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
     "lucide-react": "^1.39.0",
