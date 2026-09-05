@@ -37,6 +37,19 @@
 
   --ring: #7c5e77;
 
+  /*
+   * Tailwind's `@theme inline` (below) resolves each token's definition at
+   * BUILD time and substitutes it directly into the utilities that use it —
+   * it does NOT keep `--font-serif` itself as a live var() reference (you
+   * can confirm in the compiled CSS: `.font-serif` ends up reading whatever
+   * --font-serif pointed to, not --font-serif). So a runtime override of
+   * --font-serif (e.g. from JS) has no effect on already-compiled utilities.
+   * This extra indirection layer IS left live in the compiled CSS (Tailwind
+   * can't resolve it statically, being a next/font-generated variable), so
+   * src/lib/fonts.ts overrides *this* variable, not --font-serif.
+   */
+  --font-serif-active: var(--font-cormorant);
+
   --radius: 1rem;
   --shadow-card: 0 1px 2px rgba(46, 42, 38, 0.04), 0 8px 24px -12px rgba(46, 42, 38, 0.12);
   --shadow-pop: 0 8px 40px -8px rgba(46, 42, 38, 0.22);
@@ -71,7 +84,7 @@
 
   --color-ring: var(--ring);
 
-  --font-serif: var(--font-cormorant), ui-serif, Georgia, "Times New Roman", serif;
+  --font-serif: var(--font-serif-active), ui-serif, Georgia, "Times New Roman", serif;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
   --radius-xl: 1rem;

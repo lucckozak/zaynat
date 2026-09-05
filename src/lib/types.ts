@@ -282,6 +282,10 @@ export interface SalonSettings {
   presetId: string;
   /** brand colours — drive the whole UI at runtime */
   theme: { primary: string; accent: string };
+  /** backgroundless logo image (data URL) shown instead of the name in headers/nav */
+  logoUrl?: string;
+  /** heading/display font — an id from src/lib/fonts.ts (FONT_CHOICES); falls back to the default there when unset/unknown */
+  typography?: string;
   openingHours: OpeningHour[];
   /** buffer in minutes reserved after every appointment */
   bufferMinutes: number;

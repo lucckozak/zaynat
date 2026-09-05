@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Palette, RotateCcw } from "lucide-react";
+import { useRef, useState } from "react";
+import { ImagePlus, Palette, RotateCcw, Trash2 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import type { DayOfWeek, SalonSettings } from "@/lib/types";
 import { DAY_LABELS } from "@/lib/types";
 import { applyTheme, isValidHex, THEME_SWATCHES } from "@/lib/theme";
-import { SALON_PRESETS } from "@/lib/data/presets";
+import { applyFont, FONT_CHOICES } from "@/lib/fonts";
+import { fileToLogoDataUrl, LogoUploadError } from "@/lib/image-upload";
 import { PageHeading } from "@/components/layout/dashboard-shell";
 import { Card, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,16 +15,17 @@ import { Field, Input, Select } from "@/components/ui/field";
 import { Switch } from "@/components/ui/misc";
 import { Dialog } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
+import { cn } from "@/lib/utils";
 
 const ORDER: DayOfWeek[] = [1, 2, 3, 4, 5, 6, 0];
 
 export default function AdminSettingsPage() {
-  const { db, updateSettings, resetAll, reseedAsPreset } = useStore();
-  const router = useRouter();
+  const { db, updateSettings, resetAll } = useStore();
   const toast = useToast();
   const [s, setS] = useState<SalonSettings>(structuredClone(db.settings));
   const [confirmReset, setConfirmReset] = useState(false);
-  const [presetToLoad, setPresetToLoad] = useState<string | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   function set<K extends keyof SalonSettings>(k: K, v: SalonSettings[K]) {
     setS((prev) => ({ ...prev, [k]: v }));
@@ -35,6 +36,23 @@ export default function AdminSettingsPage() {
     setS((prev) => ({ ...prev, theme }));
     if (isValidHex(theme.primary) && isValidHex(theme.accent))
       applyTheme(theme); // live preview
+  }
+
+  async function handleLogoFile(file: File) {
+    setUploadingLogo(true);
+    try {
+      const dataUrl = await fileToLogoDataUrl(file);
+      set("logoUrl", dataUrl);
+      toast.success("Logo uploaded", "Press Save all settings to keep it.");
+    } catch (err) {
+      toast.error(
+        "Couldn't use that image",
+        err instanceof LogoUploadError ? err.message : "Try a different file.",
+      );
+    } finally {
+      setUploadingLogo(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   }
 
   function setOpening(day: DayOfWeek, patch: Partial<{ open: string | null; close: string | null }>) {
@@ -97,7 +115,7 @@ export default function AdminSettingsPage() {
         </CardBody>
       </Card>
 
-      {/* Appearance & demo preset */}
+      {/* Appearance */}
       <Card>
         <CardBody className="space-y-5">
           <div className="flex items-center gap-2">
@@ -106,6 +124,60 @@ export default function AdminSettingsPage() {
               Appearance
             </h2>
           </div>
+
+          <Field
+            label="Logo"
+            hint="A backgroundless (transparent) PNG, WebP or SVG works best — shown in place of the salon name in headers and navigation."
+          >
+            <div className="flex items-center gap-4">
+              <div
+                className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-dashed border-border-strong bg-[repeating-conic-gradient(#00000008_0%_25%,transparent_0%_50%)] bg-[length:12px_12px]"
+                aria-hidden
+              >
+                {s.logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={s.logoUrl}
+                    alt="Logo preview"
+                    className="h-full w-full object-contain p-1.5"
+                  />
+                ) : (
+                  <ImagePlus size={20} className="text-muted" />
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/webp,image/jpeg,image/svg+xml"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleLogoFile(file);
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  loading={uploadingLogo}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <ImagePlus size={14} /> {s.logoUrl ? "Replace logo" : "Upload logo"}
+                </Button>
+                {s.logoUrl ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => set("logoUrl", undefined)}
+                  >
+                    <Trash2 size={14} /> Remove
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+          </Field>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field
@@ -180,28 +252,40 @@ export default function AdminSettingsPage() {
           </div>
 
           <div className="border-t border-border pt-4">
-            <p className="text-[13px] font-medium text-muted-strong">
-              Load a salon template
+            <p className="mb-2 text-[13px] font-medium text-muted-strong">
+              Typography
             </p>
-            <p className="mb-2 text-xs text-muted">
-              Swaps the whole demo — name, branding, menu and team — and loads
-              fresh sample data.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {SALON_PRESETS.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => setPresetToLoad(p.id)}
-                  className={
-                    "rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors " +
-                    (p.id === db.settings.presetId
-                      ? "border-primary bg-primary-soft/50 text-primary-hover"
-                      : "border-border bg-surface text-foreground hover:border-primary/50")
-                  }
-                >
-                  {p.label}
-                </button>
-              ))}
+            <div className="grid gap-2 sm:grid-cols-3">
+              {FONT_CHOICES.map((f) => {
+                const active = (s.typography ?? FONT_CHOICES[0].id) === f.id;
+                return (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => {
+                      set("typography", f.id);
+                      applyFont(f.id); // live preview
+                    }}
+                    className={cn(
+                      "rounded-xl border px-3 py-2.5 text-left transition-colors",
+                      active
+                        ? "border-primary bg-primary-soft/50"
+                        : "border-border bg-surface hover:border-primary/40",
+                    )}
+                  >
+                    <span
+                      className="block text-lg font-medium text-foreground"
+                      style={{ fontFamily: f.stack }}
+                    >
+                      Aa
+                    </span>
+                    <span className="mt-0.5 block text-xs font-medium text-foreground">
+                      {f.label}
+                    </span>
+                    <span className="block text-xs text-muted">{f.description}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </CardBody>
@@ -395,39 +479,6 @@ export default function AdminSettingsPage() {
         }
       >
         <p className="text-sm text-muted">This cannot be undone.</p>
-      </Dialog>
-
-      <Dialog
-        open={!!presetToLoad}
-        onClose={() => setPresetToLoad(null)}
-        title="Load this salon template?"
-        description="The demo will be rebuilt as this salon — its own name, branding, service menu, team and fresh sample bookings. Local changes are discarded."
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setPresetToLoad(null)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={() => {
-                if (presetToLoad) {
-                  reseedAsPreset(presetToLoad);
-                  const label = SALON_PRESETS.find(
-                    (p) => p.id === presetToLoad,
-                  )?.label;
-                  toast.success(`Loaded ${label ?? "template"}`);
-                  router.push("/admin");
-                }
-                setPresetToLoad(null);
-              }}
-            >
-              Load template
-            </Button>
-          </>
-        }
-      >
-        <p className="text-sm text-muted">
-          {SALON_PRESETS.find((p) => p.id === presetToLoad)?.blurb}
-        </p>
       </Dialog>
     </div>
   );

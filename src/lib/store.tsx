@@ -33,7 +33,7 @@ import {
   saveDatabase,
 } from "./data/seed";
 import { useTenant } from "./tenant";
-import { reseedTenant, updateTenantMeta } from "./tenants";
+import { reseedTenant } from "./tenants";
 
 /* ------------------------------------------------------------------ *
  * Context
@@ -117,8 +117,6 @@ interface StoreValue {
   sendEmail: (msg: Omit<EmailMessage, "id" | "sentAt">) => void;
   /** wipe and re-seed THIS tenant's own demo data only (never another tenant's) */
   resetAll: () => void;
-  /** rebuild THIS tenant's data (branding, catalog, team) from a different starter template — never touches other tenants */
-  reseedAsPreset: (presetId: string) => void;
 
   // marketing
   saveCoupon: (coupon: Coupon) => void;
@@ -568,12 +566,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         if (!salonId) return;
         reseedTenant(salonId);
         setDb(loadDatabase(salonId));
-      },
-
-      reseedAsPreset: (presetId) => {
-        if (!salonId) return;
-        setDb(generateSeedDatabase(new Date(), presetId));
-        updateTenantMeta(salonId, { presetId });
       },
 
       saveCoupon: (coupon) =>

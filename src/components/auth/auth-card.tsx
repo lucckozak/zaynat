@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
+import { BrandMark } from "@/components/layout/brand-mark";
 
 export function AuthShell({
   title,
@@ -38,11 +39,11 @@ export function AuthShell({
 
   return (
     <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-md flex-col justify-center px-4 py-12 sm:px-6">
-      <Link
-        href="/site"
-        className="mb-8 text-center font-serif text-2xl font-semibold text-foreground"
-      >
-        {db.settings.name || "Maison Lumière"}
+      <Link href="/site" className="mb-8 flex items-center justify-center">
+        <BrandMark
+          imgClassName="h-10 w-auto max-w-[12rem] object-contain"
+          textClassName="text-center font-serif text-2xl font-semibold text-foreground"
+        />
       </Link>
       <div className="rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-card)] sm:p-8">
         <h1 className="font-serif text-2xl font-medium text-foreground">

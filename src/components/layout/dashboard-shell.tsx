@@ -7,8 +7,8 @@ import { ArrowUpRight, LogOut, Menu, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn, fullName } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
-import { useStore } from "@/lib/store";
 import { Avatar } from "@/components/ui/avatar";
+import { BrandMark } from "@/components/layout/brand-mark";
 
 export interface NavItem {
   href: string;
@@ -28,7 +28,6 @@ export function DashboardShell({
 }) {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
-  const { db } = useStore();
   const [open, setOpen] = useState(false);
 
   const isActive = (item: NavItem) =>
@@ -61,8 +60,11 @@ export function DashboardShell({
   const sidebarContent = (
     <div className="flex h-full flex-col">
       <div className="px-3 py-5">
-        <Link href="/site" className="font-serif text-lg font-semibold text-foreground">
-          {db.settings.name || "Maison Lumière"}
+        <Link href="/site">
+          <BrandMark
+            imgClassName="h-7 w-auto max-w-[8rem] object-contain"
+            textClassName="font-serif text-lg font-semibold text-foreground"
+          />
         </Link>
         <p className="mt-0.5 text-xs font-medium uppercase tracking-[0.18em] text-accent">
           {area}
@@ -128,9 +130,10 @@ export function DashboardShell({
           >
             <Menu size={20} />
           </button>
-          <span className="font-serif text-base font-semibold text-foreground">
-            {db.settings.name || "Maison Lumière"}
-          </span>
+          <BrandMark
+            imgClassName="h-6 w-auto max-w-[7rem] object-contain"
+            textClassName="font-serif text-base font-semibold text-foreground"
+          />
           <span className="text-xs font-medium uppercase tracking-wide text-accent">
             {area}
           </span>
