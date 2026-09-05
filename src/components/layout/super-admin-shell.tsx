@@ -64,7 +64,7 @@ export function SuperAdminShell({ children }: { children: React.ReactNode }) {
   const sidebarContent = (
     <div className="flex h-full flex-col">
       <div className="px-3 py-5">
-        <Link href="/super-admin" className="font-serif text-lg font-semibold text-foreground">
+        <Link href="/super-admin" className="font-brand text-lg font-semibold text-foreground">
           {BRAND_NAME}
         </Link>
         <p className="mt-0.5 text-xs font-medium uppercase tracking-[0.18em] text-accent">
@@ -119,7 +119,7 @@ export function SuperAdminShell({ children }: { children: React.ReactNode }) {
           >
             <Menu size={20} />
           </button>
-          <span className="font-serif text-base font-semibold text-foreground">
+          <span className="font-brand text-base font-semibold text-foreground">
             {BRAND_NAME}
           </span>
           <span className="text-xs font-medium uppercase tracking-wide text-accent">

@@ -74,7 +74,7 @@ const FEATURES = [
 
 export default function MarketingHomePage() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="zaynat-page flex min-h-screen flex-col">
       <MarketingHeader />
 
       <main className="flex-1">
@@ -121,7 +121,7 @@ export default function MarketingHomePage() {
         </section>
 
         {/* Product showcase */}
-        <section id="features" className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
+        <section id="features" className="scroll-mt-20 mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
           <SectionTitle
             eyebrow="See it in action"
             title="Everything runs from one dashboard"
@@ -180,7 +180,7 @@ export default function MarketingHomePage() {
         </section>
 
         {/* Pricing */}
-        <section id="pricing" className="border-y border-border bg-surface-muted">
+        <section id="pricing" className="scroll-mt-20 border-y border-border bg-surface-muted">
           <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
             <SectionTitle
               eyebrow="Pricing"

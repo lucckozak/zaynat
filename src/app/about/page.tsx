@@ -31,7 +31,7 @@ const VALUES = [
 
 export default function AboutPage() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="zaynat-page flex min-h-screen flex-col">
       <MarketingHeader />
 
       <main className="flex-1">

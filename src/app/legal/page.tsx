@@ -21,7 +21,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function LegalPage() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="zaynat-page flex min-h-screen flex-col">
       <MarketingHeader />
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-16 sm:px-6 sm:py-20">

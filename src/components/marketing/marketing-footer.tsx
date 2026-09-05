@@ -1,8 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { BRAND_NAME } from "@/lib/brand";
+import { useAnchorNav } from "@/lib/use-anchor-nav";
 
 export function MarketingFooter() {
+  const handleAnchorClick = useAnchorNav();
   return (
     <footer className="border-t border-border bg-surface-muted">
       <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
@@ -27,10 +31,18 @@ export function MarketingFooter() {
               Product
             </p>
             <nav className="flex flex-col gap-2 text-sm text-muted">
-              <Link href="/#features" className="hover:text-foreground">
+              <Link
+                href="/#features"
+                onClick={(e) => handleAnchorClick(e, "/#features")}
+                className="hover:text-foreground"
+              >
                 Features
               </Link>
-              <Link href="/#pricing" className="hover:text-foreground">
+              <Link
+                href="/#pricing"
+                onClick={(e) => handleAnchorClick(e, "/#pricing")}
+                className="hover:text-foreground"
+              >
                 Pricing
               </Link>
               <Link href="/site" className="hover:text-foreground">

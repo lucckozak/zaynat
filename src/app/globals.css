@@ -124,12 +124,29 @@ h1, h2, h3, h4 {
  * Zaynat's own marketing/company pages (never a salon's) use a fixed bold
  * sans headline treatment, distinct from the per-salon configurable
  * --font-serif. A Tailwind arbitrary-value class
- * (font-brand) silently failed to generate any
+ * (font-[family-name:var(--font-poppins)]) silently failed to generate any
  * rule at all here — confirmed against the compiled CSS, not assumed — so
  * this is a real class instead.
  */
 .font-brand {
   font-family: var(--font-poppins), ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+}
+
+/*
+ * Every heading on a Zaynat platform page (marketing home, about, legal,
+ * register-salon) should use that same bold sans, not the per-salon
+ * --font-serif those pages inherit by default. Rather than hand-adding
+ * font-brand to every <h1>-<h4> — including ones inside shared components
+ * like SectionTitle/Card that salon storefront pages ALSO render, where the
+ * elegant serif is correct — this scopes the override to a wrapper class so
+ * shared components keep working correctly in both contexts.
+ */
+.zaynat-page h1,
+.zaynat-page h2,
+.zaynat-page h3,
+.zaynat-page h4 {
+  font-family: var(--font-poppins), ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  font-weight: 600;
 }
 
 /* Elegant scrollbars */

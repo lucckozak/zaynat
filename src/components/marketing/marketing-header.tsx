@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronDown, Menu, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BRAND_NAME } from "@/lib/brand";
+import { useAnchorNav } from "@/lib/use-anchor-nav";
 import { LinkButton } from "@/components/ui/button";
 
 const NAV = [
@@ -17,6 +18,7 @@ const NAV = [
 export function MarketingHeader() {
   const [open, setOpen] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+  const handleAnchorClick = useAnchorNav();
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-md">
@@ -35,6 +37,7 @@ export function MarketingHeader() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={(e) => handleAnchorClick(e, item.href)}
               className="rounded-full px-3.5 py-2 text-sm font-medium text-muted-strong transition-colors hover:bg-surface-sunken hover:text-foreground"
             >
               {item.label}
@@ -89,7 +92,10 @@ export function MarketingHeader() {
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={() => setOpen(false)}
+                onClick={(e) => {
+                  handleAnchorClick(e, item.href);
+                  setOpen(false);
+                }}
                 className="block rounded-xl px-3 py-2.5 text-sm font-medium text-foreground hover:bg-surface-sunken"
               >
                 {item.label}
