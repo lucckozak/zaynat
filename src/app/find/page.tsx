@@ -6,7 +6,7 @@ import { Card, CardBody } from "@/components/ui/card";
 import { LinkButton } from "@/components/ui/button";
 
 export const metadata: Metadata = {
-  // plain string — the root layout's template appends "· UAE Salon Platform"
+  // plain string — the root layout's template appends "· Zaynat"
   title: "Find a Salon",
   description: "Discover salons across the UAE — coming in a later phase.",
 };

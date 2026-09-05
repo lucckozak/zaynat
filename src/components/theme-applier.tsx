@@ -6,15 +6,7 @@ import { useStore } from "@/lib/store";
 import { applyTheme, DEFAULT_THEME } from "@/lib/theme";
 import { applyFont, DEFAULT_FONT_ID } from "@/lib/fonts";
 import { applyFavicon } from "@/lib/favicon";
-
-// Routes that aren't scoped to any one salon — the platform's own brand
-// stays fixed here regardless of which salon was last active, rather than
-// bleeding that salon's colours/font/favicon onto the operator's own tools.
-const PLATFORM_ROUTE_PREFIXES = ["/super-admin", "/find"];
-
-function isPlatformRoute(pathname: string) {
-  return pathname === "/" || PLATFORM_ROUTE_PREFIXES.some((p) => pathname.startsWith(p));
-}
+import { isPlatformRoute } from "@/lib/platform-routes";
 
 /** Pushes the active salon's brand colours, heading font and favicon onto the page. */
 export function ThemeApplier() {

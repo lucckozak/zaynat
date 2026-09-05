@@ -120,6 +120,18 @@ h1, h2, h3, h4 {
   letter-spacing: -0.01em;
 }
 
+/*
+ * Zaynat's own marketing/company pages (never a salon's) use a fixed bold
+ * sans headline treatment, distinct from the per-salon configurable
+ * --font-serif. A Tailwind arbitrary-value class
+ * (font-brand) silently failed to generate any
+ * rule at all here — confirmed against the compiled CSS, not assumed — so
+ * this is a real class instead.
+ */
+.font-brand {
+  font-family: var(--font-poppins), ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+}
+
 /* Elegant scrollbars */
 * {
   scrollbar-width: thin;

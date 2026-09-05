@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronDown, Menu, ShieldCheck, X } from "lucide-react";
+import { ChevronDown, Menu, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BRAND_NAME } from "@/lib/brand";
 import { LinkButton } from "@/components/ui/button";
 
 const NAV = [
-  { href: "#features", label: "Features" },
-  { href: "#how-it-works", label: "How It Works" },
-  { href: "#pricing", label: "Pricing" },
+  { href: "/#features", label: "Features" },
+  { href: "/#pricing", label: "Pricing" },
+  { href: "/about", label: "About" },
   { href: "/find", label: "Find a Salon" },
 ];
 
@@ -21,9 +22,11 @@ export function MarketingHeader() {
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-6 px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2">
-          <ShieldCheck className="text-primary" size={22} />
-          <span className="font-serif text-xl font-semibold tracking-tight text-foreground">
-            UAE Salon Platform
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+            <Sparkles size={16} />
+          </span>
+          <span className="font-brand text-xl font-semibold tracking-tight text-foreground">
+            {BRAND_NAME}
           </span>
         </Link>
 
@@ -46,27 +49,27 @@ export function MarketingHeader() {
               onBlur={() => setTimeout(() => setLoginOpen(false), 150)}
               className="flex items-center gap-1 rounded-full px-3.5 py-2 text-sm font-medium text-muted-strong transition-colors hover:bg-surface-sunken hover:text-foreground"
             >
-              Login <ChevronDown size={14} />
+              Log in <ChevronDown size={14} />
             </button>
             {loginOpen ? (
-              <div className="absolute right-0 top-full mt-1 w-48 overflow-hidden rounded-xl border border-border bg-surface py-1 shadow-[var(--shadow-pop)]">
+              <div className="absolute right-0 top-full mt-1 w-52 overflow-hidden rounded-xl border border-border bg-surface py-1 shadow-[var(--shadow-pop)]">
                 <Link
                   href="/login"
                   className="block px-3.5 py-2.5 text-sm font-medium text-foreground hover:bg-surface-sunken"
                 >
-                  Salon login
+                  Salon owner login
                 </Link>
                 <Link
                   href="/super-admin/login"
                   className="block px-3.5 py-2.5 text-sm font-medium text-foreground hover:bg-surface-sunken"
                 >
-                  Platform operator login
+                  {BRAND_NAME} team login
                 </Link>
               </div>
             ) : null}
           </div>
-          <LinkButton href="#get-started" size="sm">
-            Get Started
+          <LinkButton href="/register-salon" size="sm">
+            Get started free
           </LinkButton>
         </div>
 
@@ -92,13 +95,9 @@ export function MarketingHeader() {
                 {item.label}
               </Link>
             ))}
-            <div
-              className={cn(
-                "mt-3 flex flex-col gap-2 border-t border-border pt-3",
-              )}
-            >
+            <div className={cn("mt-3 flex flex-col gap-2 border-t border-border pt-3")}>
               <LinkButton href="/login" variant="outline" size="sm" onClick={() => setOpen(false)}>
-                Salon login
+                Salon owner login
               </LinkButton>
               <LinkButton
                 href="/super-admin/login"
@@ -106,10 +105,10 @@ export function MarketingHeader() {
                 size="sm"
                 onClick={() => setOpen(false)}
               >
-                Platform operator login
+                {BRAND_NAME} team login
               </LinkButton>
-              <LinkButton href="#get-started" size="sm" onClick={() => setOpen(false)}>
-                Get Started
+              <LinkButton href="/register-salon" size="sm" onClick={() => setOpen(false)}>
+                Get started free
               </LinkButton>
             </div>
           </div>

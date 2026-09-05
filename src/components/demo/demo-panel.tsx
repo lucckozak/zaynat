@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
 import { useAuth } from "@/lib/auth";
 import { useTenant } from "@/lib/tenant";
+import { isPlatformRoute } from "@/lib/platform-routes";
 import { useToast } from "@/components/ui/toast";
 
 const ROLE_HOME: Record<Role, string> = {
@@ -33,13 +34,8 @@ export function DemoPanel() {
   const [hidden, setHidden] = useState(true);
 
   // This is prototype tooling for previewing a salon's site as a different
-  // role — it has no place on the platform's own marketing site, the
-  // (not-yet-built) marketplace, or the Super Admin console, which are not
-  // scoped to any one salon.
-  const onSalonRoute =
-    !pathname.startsWith("/super-admin") &&
-    pathname !== "/" &&
-    !pathname.startsWith("/find");
+  // role — it has no place on any page that isn't scoped to one salon.
+  const onSalonRoute = !isPlatformRoute(pathname);
 
   useEffect(() => {
     try {
