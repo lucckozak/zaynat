@@ -132,6 +132,12 @@ interface StoreValue {
     | { kind: "giftcard"; giftCard: GiftCard; amount: number }
     | { kind: "invalid"; reason: string };
   sendBirthdayGreeting: (customerId: string) => void;
+  /** stubbed like every other email in this prototype — queued into emailLog, never actually delivered. Returns how many recipients it went to. */
+  sendMarketingCampaign: (input: {
+    subject: string;
+    body: string;
+    customerIds: string[];
+  }) => number;
 }
 
 const StoreContext = createContext<StoreValue | null>(null);
@@ -646,6 +652,27 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           ]);
           return next;
         });
+      },
+
+      sendMarketingCampaign: (input) => {
+        const recipients = input.customerIds
+          .map((id) => userById(id))
+          .filter((u): u is User => !!u && !!u.email);
+        if (recipients.length === 0) return 0;
+        mutate((prev) => {
+          const next = { ...prev };
+          pushEmails(
+            next,
+            recipients.map((customer) => ({
+              to: customer.email,
+              subject: input.subject,
+              body: input.body.replaceAll("{firstName}", customer.firstName),
+              kind: "MARKETING",
+            })),
+          );
+          return next;
+        });
+        return recipients.length;
       },
     };
   }, [db, mutate, salonId]);

@@ -352,7 +352,8 @@ export interface EmailMessage {
     | "EMPLOYEE_NOTIFICATION"
     | "ADMIN_NOTIFICATION"
     | "BIRTHDAY"
-    | "REVIEW_REQUEST";
+    | "REVIEW_REQUEST"
+    | "MARKETING";
 }
 
 export const ACTIVE_STATUSES: AppointmentStatus[] = [

@@ -1,21 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { Gift, Plus, Tag, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Gift, Mail, Plus, Tag, Trash2 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import type { Coupon, GiftCard } from "@/lib/types";
-import { formatPrice, uid } from "@/lib/utils";
+import { formatPrice, fullName, uid } from "@/lib/utils";
 import { fmt } from "@/lib/time";
 import { PageHeading } from "@/components/layout/dashboard-shell";
 import { Card, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Field, Input, Select } from "@/components/ui/field";
+import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { Badge } from "@/components/ui/badge";
 import { Dialog } from "@/components/ui/dialog";
 import { EmptyState, Segmented, Switch } from "@/components/ui/misc";
 import { useToast } from "@/components/ui/toast";
 
-type Tab = "coupons" | "giftcards";
+type Tab = "coupons" | "giftcards" | "email";
 
 export default function AdminMarketingPage() {
   const { db } = useStore();
@@ -25,7 +25,7 @@ export default function AdminMarketingPage() {
     <div>
       <PageHeading
         title="Marketing"
-        description="Coupons and gift cards customers can redeem at checkout."
+        description="Coupons, gift cards, and email campaigns to your customers."
         action={
           <Segmented
             value={tab}
@@ -33,6 +33,7 @@ export default function AdminMarketingPage() {
             options={[
               { value: "coupons", label: "Coupons" },
               { value: "giftcards", label: "Gift cards" },
+              { value: "email", label: "Email" },
             ]}
           />
         }
@@ -40,8 +41,10 @@ export default function AdminMarketingPage() {
 
       {tab === "coupons" ? (
         <CouponsPanel currency={db.settings.currency} />
-      ) : (
+      ) : tab === "giftcards" ? (
         <GiftCardsPanel currency={db.settings.currency} />
+      ) : (
+        <EmailerPanel />
       )}
     </div>
   );
@@ -399,6 +402,219 @@ function GiftCardsPanel({ currency }: { currency: string }) {
         }
       >
         <p className="text-sm text-muted">This can't be undone.</p>
+      </Dialog>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+
+function EmailerPanel() {
+  const { db, sendMarketingCampaign } = useStore();
+  const toast = useToast();
+
+  const customers = useMemo(
+    () => db.users.filter((u) => u.role === "CUSTOMER"),
+    [db.users],
+  );
+
+  const [subject, setSubject] = useState("");
+  const [body, setBody] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(
+    () => new Set(customers.filter((c) => !c.blocked).map((c) => c.id)),
+  );
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  function toggle(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function selectAll(includeBlocked: boolean) {
+    setSelected(
+      new Set(customers.filter((c) => includeBlocked || !c.blocked).map((c) => c.id)),
+    );
+  }
+
+  // Group the flat emailLog entries this campaign produced (one per
+  // recipient) back into per-send summaries, by subject + timestamp.
+  const recentCampaigns = useMemo(() => {
+    const groups = new Map<string, { subject: string; sentAt: string; count: number }>();
+    for (const m of db.emailLog) {
+      if (m.kind !== "MARKETING") continue;
+      const key = `${m.subject}__${m.sentAt}`;
+      const g = groups.get(key);
+      if (g) g.count++;
+      else groups.set(key, { subject: m.subject, sentAt: m.sentAt, count: 1 });
+    }
+    return [...groups.values()].slice(0, 8);
+  }, [db.emailLog]);
+
+  function send() {
+    const count = sendMarketingCampaign({
+      subject: subject.trim(),
+      body: body.trim(),
+      customerIds: [...selected],
+    });
+    toast.success(
+      `Campaign queued for ${count} customer${count === 1 ? "" : "s"}`,
+      "Email delivery is stubbed in this prototype — logged, not actually sent.",
+    );
+    setSubject("");
+    setBody("");
+    setConfirmOpen(false);
+  }
+
+  const canSend = subject.trim().length > 0 && body.trim().length > 0 && selected.size > 0;
+
+  return (
+    <div className="grid gap-4 lg:grid-cols-[1.3fr_1fr]">
+      <Card>
+        <CardBody className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Mail size={16} className="text-primary" />
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
+              Compose
+            </h2>
+          </div>
+          <Field label="Subject" required>
+            <Input
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="A little something for you this month"
+            />
+          </Field>
+          <Field label="Message" required hint="Use {firstName} to personalise the greeting.">
+            <Textarea
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder="Hi {firstName}, ..."
+              className="min-h-[160px]"
+            />
+          </Field>
+          <div className="flex items-center justify-between border-t border-border pt-4">
+            <p className="text-sm text-muted">
+              {selected.size} recipient{selected.size === 1 ? "" : "s"} selected
+            </p>
+            <Button disabled={!canSend} onClick={() => setConfirmOpen(true)}>
+              Send campaign
+            </Button>
+          </div>
+          <p className="text-xs text-muted">
+            Email delivery is stubbed in this prototype — messages are logged, not actually sent.
+          </p>
+        </CardBody>
+      </Card>
+
+      <Card>
+        <CardBody className="space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
+              Recipients
+            </h2>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => selectAll(false)}
+                className="text-xs font-medium text-primary hover:text-primary-hover"
+              >
+                Active
+              </button>
+              <span className="text-xs text-muted">·</span>
+              <button
+                type="button"
+                onClick={() => selectAll(true)}
+                className="text-xs font-medium text-primary hover:text-primary-hover"
+              >
+                Everyone
+              </button>
+              <span className="text-xs text-muted">·</span>
+              <button
+                type="button"
+                onClick={() => setSelected(new Set())}
+                className="text-xs font-medium text-muted-strong hover:text-foreground"
+              >
+                None
+              </button>
+            </div>
+          </div>
+
+          {customers.length === 0 ? (
+            <EmptyState title="No customers yet" />
+          ) : (
+            <div className="max-h-72 space-y-1 overflow-y-auto">
+              {customers.map((c) => (
+                <label
+                  key={c.id}
+                  className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-surface-sunken"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selected.has(c.id)}
+                    onChange={() => toggle(c.id)}
+                    className="h-4 w-4 shrink-0 rounded border-border-strong text-primary focus-visible:ring-primary/30"
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm text-foreground">{fullName(c)}</span>
+                    <span className="block truncate text-xs text-muted">{c.email}</span>
+                  </span>
+                  {c.blocked ? <Badge tone="danger">Blocked</Badge> : null}
+                </label>
+              ))}
+            </div>
+          )}
+        </CardBody>
+      </Card>
+
+      {recentCampaigns.length > 0 ? (
+        <Card className="lg:col-span-2">
+          <CardBody className="space-y-3">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
+              Recently sent
+            </h2>
+            <ul className="space-y-2">
+              {recentCampaigns.map((c) => (
+                <li
+                  key={`${c.subject}-${c.sentAt}`}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2.5"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-foreground">{c.subject}</p>
+                    <p className="text-xs text-muted">
+                      {fmt.dayMonth(c.sentAt)} · {fmt.time(c.sentAt)}
+                    </p>
+                  </div>
+                  <Badge tone="neutral">
+                    {c.count} recipient{c.count === 1 ? "" : "s"}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          </CardBody>
+        </Card>
+      ) : null}
+
+      <Dialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title="Send this campaign?"
+        description={`This will queue ${selected.size} email${selected.size === 1 ? "" : "s"}. This can't be undone.`}
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setConfirmOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={send}>Send now</Button>
+          </>
+        }
+      >
+        <p className="text-sm text-muted">
+          Subject: <span className="font-medium text-foreground">{subject || "—"}</span>
+        </p>
       </Dialog>
     </div>
   );
