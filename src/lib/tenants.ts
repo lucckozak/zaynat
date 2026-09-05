@@ -225,3 +225,30 @@ export function ensureDefaultTenant(): string {
   });
   return meta.id;
 }
+
+/**
+ * Finds which salon an owner belongs to by email + password, checked
+ * against every tenant's ADMIN user. Only exists because this is a
+ * single-origin client-side prototype with no per-tenant subdomain/domain —
+ * in a real deployment an owner would simply go to their own salon's own
+ * address, the same way the tenant-scoped /login already works once you're
+ * on that salon's site. Used only by the Zaynat-branded /owner-login entry
+ * point, never by the tenant-scoped one.
+ */
+export function findOwnerAccount(
+  email: string,
+  password: string,
+): { salonId: string; userId: string } | null {
+  const target = email.trim().toLowerCase();
+  for (const tenant of readIndex()) {
+    const db = loadDatabase(tenant.id);
+    if (!db) continue;
+    const match = db.users.find(
+      (u) => u.role === "ADMIN" && u.email.toLowerCase() === target,
+    );
+    if (match && match.password === password) {
+      return { salonId: tenant.id, userId: match.id };
+    }
+  }
+  return null;
+}

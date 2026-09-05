@@ -79,7 +79,7 @@ export function MarketingFooter() {
               Log in
             </p>
             <nav className="flex flex-col gap-2 text-sm text-muted">
-              <Link href="/login" className="hover:text-foreground">
+              <Link href="/owner-login" className="hover:text-foreground">
                 Salon owner login
               </Link>
               <Link href="/super-admin/login" className="hover:text-foreground">

@@ -11,6 +11,7 @@ const PLATFORM_ROUTE_PREFIXES = [
   "/legal",
   "/register-salon",
   "/tour",
+  "/owner-login",
 ];
 
 export function isPlatformRoute(pathname: string) {

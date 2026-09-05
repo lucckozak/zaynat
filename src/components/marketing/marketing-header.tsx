@@ -57,7 +57,7 @@ export function MarketingHeader() {
             {loginOpen ? (
               <div className="absolute right-0 top-full mt-1 w-52 overflow-hidden rounded-xl border border-border bg-surface py-1 shadow-[var(--shadow-pop)]">
                 <Link
-                  href="/login"
+                  href="/owner-login"
                   className="block px-3.5 py-2.5 text-sm font-medium text-foreground hover:bg-surface-sunken"
                 >
                   Salon owner login
@@ -108,7 +108,7 @@ export function MarketingHeader() {
               </Link>
             ))}
             <div className={cn("mt-3 flex flex-col gap-2 border-t border-border pt-3")}>
-              <LinkButton href="/login" variant="outline" size="sm" onClick={() => setOpen(false)}>
+              <LinkButton href="/owner-login" variant="outline" size="sm" onClick={() => setOpen(false)}>
                 Salon owner login
               </LinkButton>
               <LinkButton
