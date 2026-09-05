@@ -51,9 +51,8 @@ export default function LegalPage() {
               <Section title="1. The service">
                 <p>
                   {BRAND_NAME} provides software that lets a salon create a
-                  branded booking website, manage staff, services, customers
-                  and appointments, and accept online payments through its
-                  own connected payment account.
+                  branded booking website and manage staff, services,
+                  customers and appointments.
                 </p>
               </Section>
               <Section title="2. Accounts and roles">
@@ -70,10 +69,12 @@ export default function LegalPage() {
               <Section title="3. Payments">
                 <p>
                   Subscription fees are billed by {BRAND_NAME} to the salon.
-                  Customer payments for bookings (deposits or full payment)
-                  are processed through the salon&apos;s own connected payment
-                  account and are not held or taken as commission by{" "}
-                  {BRAND_NAME}.
+                  {BRAND_NAME} does not currently process customer payments
+                  for bookings — there is no online payment or deposit
+                  collection in the booking flow today. When that is
+                  introduced, it will run through each salon&apos;s own
+                  connected account, never {BRAND_NAME}&apos;s, and{" "}
+                  {BRAND_NAME} does not take commission on bookings.
                 </p>
               </Section>
               <Section title="4. Suspension">

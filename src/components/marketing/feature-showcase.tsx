@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import {
+  BarChart3,
   CalendarClock,
-  CreditCard,
   LayoutDashboard,
   UserCog,
   UsersRound,
@@ -43,11 +43,11 @@ const TABS = [
     body: "Staff sign in to see just their own schedule, appointments and profile — no admin access, no clutter.",
   },
   {
-    id: "payments",
-    label: "Payments",
-    icon: CreditCard,
-    title: "Deposits or full payment — your account",
-    body: "Take a deposit or the full price online; the money settles to your own connected account, never ours.",
+    id: "reports",
+    label: "Reports",
+    icon: BarChart3,
+    title: "Revenue and commission, per specialist",
+    body: "See what's booked versus completed, your most popular services, and exactly what each specialist is owed.",
   },
 ] as const;
 
@@ -147,9 +147,15 @@ export function FeatureShowcase() {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3">
-                <Stat label="Deposit" value="AED 100" tone="primary" compact />
-                <Stat label="Balance due" value="AED 400" tone="accent" compact />
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <Stat label="This week" value="AED 12,400" tone="primary" compact />
+                  <Stat label="Top service" value="Balayage" tone="accent" compact />
+                </div>
+                <div className="flex items-center justify-between rounded-xl border border-border bg-surface px-3 py-2.5">
+                  <span className="text-sm text-foreground">Sara Ahmed · commission</span>
+                  <Badge tone="success">AED 1,120</Badge>
+                </div>
               </div>
             )}
           </div>

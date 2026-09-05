@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import {
   BarChart3,
   CalendarCheck2,
-  CreditCard,
   FileDown,
   Globe2,
   Link2,
@@ -12,6 +11,7 @@ import {
   Store,
   Tag,
   UserCog,
+  UserRound,
   UsersRound,
 } from "lucide-react";
 import { DEFAULT_SUBSCRIPTION_PLANS } from "@/lib/types";
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   // template would append the name to a second time).
   title: { absolute: `${BRAND_NAME} — booking software for UAE salons` },
   description:
-    "Zaynat is booking software for UAE salons: your own branded booking site, a real calendar, client management and direct-to-you payments — no commission, ever.",
+    "Zaynat is booking software for UAE salons: your own branded booking site, a real calendar, staff scheduling and client management — no booking commission, ever.",
 };
 
 const FEATURES = [
@@ -56,9 +56,9 @@ const FEATURES = [
     body: "Every specialist gets their own login — just their schedule, their appointments, their working hours and profile.",
   },
   {
-    icon: CreditCard,
-    title: "Payments go to you, not us",
-    body: "Deposits or full payment via your own connected account — Zaynat never takes a cut and never touches the money.",
+    icon: UserRound,
+    title: "Customer accounts",
+    body: "Customers can book as a guest or create an account to see upcoming and past visits and manage them themselves.",
   },
   {
     icon: Tag,
@@ -78,7 +78,7 @@ const FEATURES = [
   {
     icon: ShieldAlert,
     title: "No-show protection",
-    body: "Blacklist repeat no-shows, require deposits, and enforce your own cancellation window automatically.",
+    body: "Blacklist repeat no-shows and enforce your own cancellation window automatically.",
   },
   {
     icon: FileDown,
@@ -120,9 +120,8 @@ export default function MarketingHomePage() {
                 Booking software for UAE salons
               </h1>
               <p className="mx-auto mt-5 max-w-xl text-[15px] leading-relaxed text-muted sm:text-lg">
-                Keep bookings, staff, clients and payments together in one
-                place — so you spend less time on admin and more time with
-                clients.
+                Keep bookings, staff and clients together in one place — so
+                you spend less time on admin and more time with clients.
               </p>
               <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <LinkButton href="/register-salon" size="lg">
@@ -139,7 +138,7 @@ export default function MarketingHomePage() {
                 <span className="hidden sm:inline">·</span>
                 <span>Zero booking commission</span>
                 <span className="hidden sm:inline">·</span>
-                <span>Payments go straight to you</span>
+                <span>Live in minutes</span>
               </div>
             </div>
           </div>
@@ -150,7 +149,7 @@ export default function MarketingHomePage() {
           <SectionTitle
             eyebrow="See it in action"
             title="Everything runs from one dashboard"
-            description="Switch between what your calendar, booking site, client list and payments actually look like."
+            description="Switch between what your calendar, booking site, client list and staff dashboard actually look like."
             align="center"
           />
           <div className="mt-10">
@@ -164,7 +163,7 @@ export default function MarketingHomePage() {
             <SectionTitle
               eyebrow="Features"
               title="Everything a salon needs to run online"
-              description="One platform covering the booking site, the back office, and the payments — nothing bolted on."
+              description="One platform covering the booking site and the back office — nothing bolted on."
               align="center"
             />
             <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -194,8 +193,8 @@ export default function MarketingHomePage() {
               </h2>
               <p className="max-w-lg text-sm text-muted sm:text-[15px]">
                 Try the full customer journey — choose a service, a
-                specialist, a time, and see the confirmation. Clearly labelled
-                as a demonstration; no real payment is processed.
+                specialist, a time, and see the confirmation. Clearly
+                labelled as a demonstration.
               </p>
               <LinkButton href="/site" size="lg" className="mt-2">
                 Explore the demo salon

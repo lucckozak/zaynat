@@ -13,12 +13,12 @@ export interface BrandTheme {
 /**
  * Also Zaynat's OWN brand (ThemeApplier forces this on every platform page —
  * marketing, about, legal, register-salon, find, super-admin — regardless of
- * which salon is active). An earthy terracotta/sand pairing, not the "Plum"
+ * which salon is active). An earthy sage-green/sand pairing, not the "Plum"
  * a salon on the default preset happens to also use.
  */
 export const DEFAULT_THEME: BrandTheme = {
-  primary: "#c25c4d",
-  accent: "#d99a6c",
+  primary: "#5c7a63",
+  accent: "#a5936b",
 };
 
 export const THEME_SWATCHES: { label: string; primary: string; accent: string }[] =

@@ -15,8 +15,8 @@ const FAQS: { q: string; a: string }[] = [
     a: "No. There's no commission on bookings, ever — you pay the monthly subscription and keep 100% of what your salon earns.",
   },
   {
-    q: "Where does customer payment money go?",
-    a: "Directly to your own connected payment account. It never passes through a platform account — see the Legal page for the full breakdown of what's separated and why.",
+    q: "Can customers book without creating an account?",
+    a: "Yes — guest checkout is the default. Customers can optionally create an account afterwards to see upcoming and past visits and manage them themselves.",
   },
   {
     q: "How long does setup take?",

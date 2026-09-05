@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CreditCard, Globe2, ShieldCheck, Sparkles } from "lucide-react";
+import { Globe2, Percent, ShieldCheck, Sparkles } from "lucide-react";
 import { BRAND_NAME } from "@/lib/brand";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
@@ -18,9 +18,9 @@ const VALUES = [
     body: "A salon's booking site should belong to the salon — its own name, its own branding, its own web address. Not a listing buried in someone else's app.",
   },
   {
-    icon: CreditCard,
-    title: "Your money is yours",
-    body: "Customer payments settle to the salon's own connected account. We don't sit between a salon and its revenue, and we don't take a cut of bookings.",
+    icon: Percent,
+    title: "No commission, ever",
+    body: "A flat monthly subscription, never a cut of your bookings. We're not planning to sit between a salon and its revenue.",
   },
   {
     icon: ShieldCheck,
@@ -74,9 +74,9 @@ export default function AboutPage() {
           <p className="mt-6 text-center text-[15px] leading-relaxed text-muted">
             {BRAND_NAME} is a young platform, built and improved in the open.
             Today it covers booking, calendar, staff and client management,
-            branding, and direct-to-you payments across UAE salons.
-            Marketplace discovery, deeper analytics and more integrations are
-            actively on the roadmap — see the{" "}
+            and branding across UAE salons. Online payments, marketplace
+            discovery, deeper analytics and more integrations are actively on
+            the roadmap — see the{" "}
             <a href="/legal" className="font-medium text-primary hover:text-primary-hover">
               Legal
             </a>{" "}

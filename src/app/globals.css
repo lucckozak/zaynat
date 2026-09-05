@@ -20,16 +20,16 @@
   /*
    * Brand — this is the pre-hydration fallback (before ThemeApplier's effect
    * runs), so it's kept in sync with src/lib/theme.ts's DEFAULT_THEME
-   * (Zaynat's own earthy terracotta/sand) to avoid a colour flash on
+   * (Zaynat's own earthy sage-green/sand) to avoid a colour flash on
    * platform pages. A salon with its own theme repaints these immediately
    * on hydration regardless.
    */
-  --primary: #c25c4d;
-  --primary-hover: #a34d41;
-  --primary-soft: #f9efed;
+  --primary: #5c7a63;
+  --primary-hover: #4d6653;
+  --primary-soft: #eff2ef;
   --primary-foreground: #ffffff;
-  --accent: #d99a6c;
-  --accent-soft: #faf1ea;
+  --accent: #a5936b;
+  --accent-soft: #f2f0ea;
 
   /* Status */
   --success: #4f8265;
@@ -41,7 +41,7 @@
   --info: #5f7a99;
   --info-soft: #e5ebf2;
 
-  --ring: #c25c4d;
+  --ring: #5c7a63;
 
   /*
    * Tailwind's `@theme inline` (below) resolves each token's definition at

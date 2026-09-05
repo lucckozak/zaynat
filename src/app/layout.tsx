@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     template: "%s · Zaynat",
   },
   description:
-    "Zaynat is booking software for UAE salons — your own branded booking site, appointment management, and direct-to-you payments, all in one place.",
+    "Zaynat is booking software for UAE salons — your own branded booking site, appointment management, staff scheduling and customer management, all in one place.",
 };
 
 export default function RootLayout({

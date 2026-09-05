@@ -22,7 +22,7 @@ export function MarketingFooter() {
             </div>
             <p className="mt-3 max-w-xs text-sm text-muted">
               Booking software for UAE salons — your own site, your own
-              customers, your own payments.
+              customers, your way.
             </p>
           </div>
 
@@ -45,8 +45,11 @@ export function MarketingFooter() {
               >
                 Pricing
               </Link>
+              <Link href="/tour" className="hover:text-foreground">
+                Product tour
+              </Link>
               <Link href="/site" className="hover:text-foreground">
-                Demo
+                Live demo
               </Link>
               <Link href="/find" className="hover:text-foreground">
                 Find a Salon

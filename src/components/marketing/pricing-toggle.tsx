@@ -47,7 +47,7 @@ export function PricingToggle({ plans }: { plans: SubscriptionPlanConfig[] }) {
             },
             { included: true, label: "Online booking & calendar" },
             { included: true, label: "Employee dashboards & schedules" },
-            { included: true, label: "Deposits & online payments" },
+            { included: true, label: "Customer accounts & history" },
             { included: true, label: "Marketing tools — coupons & gift cards" },
             { included: p.marketplaceVisibility, label: "Marketplace visibility" },
             { included: p.customDomain, label: "Custom domain" },
