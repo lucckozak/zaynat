@@ -7,7 +7,8 @@ import type { DayOfWeek, SalonSettings } from "@/lib/types";
 import { DAY_LABELS } from "@/lib/types";
 import { applyTheme, isValidHex, THEME_SWATCHES } from "@/lib/theme";
 import { applyFont, FONT_CHOICES } from "@/lib/fonts";
-import { fileToLogoDataUrl, LogoUploadError } from "@/lib/image-upload";
+import { applyFavicon } from "@/lib/favicon";
+import { fileToFaviconDataUrl, fileToLogoDataUrl, ImageUploadError } from "@/lib/image-upload";
 import { PageHeading } from "@/components/layout/dashboard-shell";
 import { Card, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,9 @@ export default function AdminSettingsPage() {
   const [s, setS] = useState<SalonSettings>(structuredClone(db.settings));
   const [confirmReset, setConfirmReset] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingFavicon, setUploadingFavicon] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const faviconInputRef = useRef<HTMLInputElement>(null);
 
   function set<K extends keyof SalonSettings>(k: K, v: SalonSettings[K]) {
     setS((prev) => ({ ...prev, [k]: v }));
@@ -47,11 +50,29 @@ export default function AdminSettingsPage() {
     } catch (err) {
       toast.error(
         "Couldn't use that image",
-        err instanceof LogoUploadError ? err.message : "Try a different file.",
+        err instanceof ImageUploadError ? err.message : "Try a different file.",
       );
     } finally {
       setUploadingLogo(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function handleFaviconFile(file: File) {
+    setUploadingFavicon(true);
+    try {
+      const dataUrl = await fileToFaviconDataUrl(file);
+      set("faviconUrl", dataUrl);
+      applyFavicon(dataUrl); // live preview — updates the browser tab icon
+      toast.success("Favicon uploaded", "Press Save all settings to keep it.");
+    } catch (err) {
+      toast.error(
+        "Couldn't use that image",
+        err instanceof ImageUploadError ? err.message : "Try a different file.",
+      );
+    } finally {
+      setUploadingFavicon(false);
+      if (faviconInputRef.current) faviconInputRef.current.value = "";
     }
   }
 
@@ -171,6 +192,63 @@ export default function AdminSettingsPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => set("logoUrl", undefined)}
+                  >
+                    <Trash2 size={14} /> Remove
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+          </Field>
+
+          <Field
+            label="Favicon"
+            hint="The icon shown in the browser tab and bookmarks — a small square image (a simplified version of your logo often works best)."
+          >
+            <div className="flex items-center gap-4">
+              <div
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-dashed border-border-strong bg-[repeating-conic-gradient(#00000008_0%_25%,transparent_0%_50%)] bg-[length:10px_10px]"
+                aria-hidden
+              >
+                {s.faviconUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={s.faviconUrl}
+                    alt="Favicon preview"
+                    className="h-full w-full object-contain p-1"
+                  />
+                ) : (
+                  <ImagePlus size={16} className="text-muted" />
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <input
+                  ref={faviconInputRef}
+                  type="file"
+                  accept="image/png,image/webp,image/jpeg,image/svg+xml"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFaviconFile(file);
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  loading={uploadingFavicon}
+                  onClick={() => faviconInputRef.current?.click()}
+                >
+                  <ImagePlus size={14} /> {s.faviconUrl ? "Replace favicon" : "Upload favicon"}
+                </Button>
+                {s.faviconUrl ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      set("faviconUrl", undefined);
+                      applyFavicon(undefined);
+                    }}
                   >
                     <Trash2 size={14} /> Remove
                   </Button>

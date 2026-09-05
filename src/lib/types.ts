@@ -284,6 +284,8 @@ export interface SalonSettings {
   theme: { primary: string; accent: string };
   /** backgroundless logo image (data URL) shown instead of the name in headers/nav */
   logoUrl?: string;
+  /** browser-tab icon (data URL); falls back to the default /favicon.ico when unset */
+  faviconUrl?: string;
   /** heading/display font — an id from src/lib/fonts.ts (FONT_CHOICES); falls back to the default there when unset/unknown */
   typography?: string;
   openingHours: OpeningHour[];
