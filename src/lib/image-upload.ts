@@ -27,7 +27,11 @@ function readAsDataUrl(file: File): Promise<string> {
 }
 
 /** Reads an uploaded image file into a data URL, resizing raster images down to a max dimension. */
-async function fileToImageDataUrl(file: File, maxDimension: number): Promise<string> {
+async function fileToImageDataUrl(
+  file: File,
+  maxDimension: number,
+  opts: { format?: "png" | "jpeg"; quality?: number } = {},
+): Promise<string> {
   if (!isAcceptedImageFile(file)) {
     throw new ImageUploadError("Use a PNG, WebP, JPEG or SVG image.");
   }
@@ -51,10 +55,14 @@ async function fileToImageDataUrl(file: File, maxDimension: number): Promise<str
   canvas.height = height;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new ImageUploadError("Couldn't process that image in this browser.");
-  ctx.clearRect(0, 0, width, height); // keep transparency
+  ctx.clearRect(0, 0, width, height); // keep transparency (only matters for PNG)
   ctx.drawImage(bitmap, 0, 0, width, height);
 
-  const dataUrl = canvas.toDataURL("image/png");
+  const format = opts.format ?? "png";
+  const dataUrl =
+    format === "jpeg"
+      ? canvas.toDataURL("image/jpeg", opts.quality ?? 0.85)
+      : canvas.toDataURL("image/png");
   if (dataUrl.length > MAX_DATA_URL_LENGTH) {
     throw new ImageUploadError("That image is too large even after resizing — try a smaller file.");
   }
@@ -69,4 +77,13 @@ export function fileToLogoDataUrl(file: File): Promise<string> {
 /** Favicons are only ever shown tiny (browser tab, bookmarks) — a small square is plenty. */
 export function fileToFaviconDataUrl(file: File): Promise<string> {
   return fileToImageDataUrl(file, 128);
+}
+
+/**
+ * Homepage hero photos are shown large (up to ~1200px wide) and are real
+ * photography, not flat graphics — JPEG compresses those far better than
+ * PNG, leaving more headroom under the shared data-URL size limit.
+ */
+export function fileToHeroImageDataUrl(file: File): Promise<string> {
+  return fileToImageDataUrl(file, 1600, { format: "jpeg", quality: 0.85 });
 }

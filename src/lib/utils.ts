@@ -53,6 +53,12 @@ export function clamp(n: number, min: number, max: number) {
   return Math.min(max, Math.max(min, n));
 }
 
+/** Adds `https://` to a bare social handle/domain (e.g. "instagram.com/foo") so it's a usable href, without forcing owners to type the scheme themselves. */
+export function toHref(url: string): string {
+  const trimmed = url.trim();
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
 function csvCell(v: unknown): string {
   const s = v === null || v === undefined ? "" : String(v);
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;

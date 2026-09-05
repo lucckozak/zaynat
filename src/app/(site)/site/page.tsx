@@ -16,7 +16,7 @@ import { SmartImage } from "@/components/ui/smart-image";
 import { Skeleton } from "@/components/ui/misc";
 import { ServiceCard } from "@/components/services/service-card";
 import { SpecialistCard } from "@/components/specialists/specialist-card";
-import { IMAGES } from "@/lib/data/images";
+import { DEFAULT_HERO_DESCRIPTION, IMAGES } from "@/lib/data/images";
 
 const BENEFITS = [
   {
@@ -62,8 +62,7 @@ export default function HomePage() {
               {db.settings.tagline || "Beauty, tailored to you."}
             </h1>
             <p className="mt-5 max-w-md text-[15px] leading-relaxed text-muted">
-              Browse our services, choose your specialist, and book a time that
-              actually works — all online, in under two minutes.
+              {db.settings.heroDescription || DEFAULT_HERO_DESCRIPTION}
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <LinkButton href="/book" size="lg">
@@ -86,7 +85,7 @@ export default function HomePage() {
 
           <div className="relative">
             <SmartImage
-              src={IMAGES.heroPortrait}
+              src={db.settings.heroImageUrl || IMAGES.heroPortrait}
               alt="A calm facial treatment in progress"
               fallbackKey="hero"
               rounded="rounded-[2rem]"

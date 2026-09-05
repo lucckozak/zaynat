@@ -304,6 +304,14 @@ export interface SalonSettings {
   faviconUrl?: string;
   /** heading/display font — an id from src/lib/fonts.ts (FONT_CHOICES); falls back to the default there when unset/unknown */
   typography?: string;
+  /** homepage hero photo (data URL); falls back to the default stock photo when unset */
+  heroImageUrl?: string;
+  /** homepage hero paragraph; falls back to the default copy when unset */
+  heroDescription?: string;
+  /** public social profile links shown in the site footer, only when set */
+  instagramUrl?: string;
+  tiktokUrl?: string;
+  facebookUrl?: string;
   openingHours: OpeningHour[];
   /** buffer in minutes reserved after every appointment */
   bufferMinutes: number;

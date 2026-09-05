@@ -3,10 +3,18 @@
 import Link from "next/link";
 import { useStore } from "@/lib/store";
 import { DAY_LABELS_SHORT } from "@/lib/types";
+import { toHref } from "@/lib/utils";
+import { FacebookIcon, InstagramIcon, TiktokIcon } from "@/components/ui/social-icons";
 
 export function SiteFooter() {
   const { db } = useStore();
   const s = db.settings;
+
+  const socials = [
+    { href: s.instagramUrl, label: "Instagram", Icon: InstagramIcon },
+    { href: s.tiktokUrl, label: "TikTok", Icon: TiktokIcon },
+    { href: s.facebookUrl, label: "Facebook", Icon: FacebookIcon },
+  ].filter((item) => item.href?.trim());
 
   return (
     <footer className="mt-16 sm:mt-24 border-t border-border bg-surface-muted">
@@ -29,6 +37,22 @@ export function SiteFooter() {
           <p className="mt-3 text-sm text-muted-strong">{s.address}</p>
           <p className="mt-2 text-sm text-muted-strong">{s.phone}</p>
           <p className="mt-2 text-sm text-muted-strong">{s.email}</p>
+          {socials.length > 0 ? (
+            <div className="mt-4 flex items-center gap-2">
+              {socials.map(({ href, label, Icon }) => (
+                <a
+                  key={label}
+                  href={toHref(href!)}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={label}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-strong transition-colors hover:border-primary/50 hover:text-primary"
+                >
+                  <Icon size={16} />
+                </a>
+              ))}
+            </div>
+          ) : null}
         </div>
 
         <div>

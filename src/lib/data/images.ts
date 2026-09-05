@@ -1,3 +1,7 @@
+/** Default homepage hero paragraph, shown until a salon sets its own in Settings → Homepage. */
+export const DEFAULT_HERO_DESCRIPTION =
+  "Browse our services, choose your specialist, and book a time that actually works — all online, in under two minutes.";
+
 const U = "https://images.unsplash.com/";
 const q = (id: string, w = 900) =>
   `${U}${id}?auto=format&fit=crop&w=${w}&q=80`;

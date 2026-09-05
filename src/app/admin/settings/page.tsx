@@ -1,22 +1,29 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ImagePlus, Palette, RotateCcw, Trash2 } from "lucide-react";
+import { Image as ImageIcon, ImagePlus, Palette, RotateCcw, Trash2 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import type { DayOfWeek, SalonSettings } from "@/lib/types";
 import { DAY_LABELS } from "@/lib/types";
 import { applyTheme, isValidHex, THEME_SWATCHES } from "@/lib/theme";
 import { applyFont, FONT_CHOICES } from "@/lib/fonts";
 import { applyFavicon } from "@/lib/favicon";
-import { fileToFaviconDataUrl, fileToLogoDataUrl, ImageUploadError } from "@/lib/image-upload";
+import {
+  fileToFaviconDataUrl,
+  fileToHeroImageDataUrl,
+  fileToLogoDataUrl,
+  ImageUploadError,
+} from "@/lib/image-upload";
 import { PageHeading } from "@/components/layout/dashboard-shell";
 import { Card, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Field, Input, Select } from "@/components/ui/field";
+import { Field, Input, Select, Textarea } from "@/components/ui/field";
 import { Switch } from "@/components/ui/misc";
 import { Dialog } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
+import { FacebookIcon, InstagramIcon, TiktokIcon } from "@/components/ui/social-icons";
 import { cn } from "@/lib/utils";
+import { DEFAULT_HERO_DESCRIPTION } from "@/lib/data/images";
 
 const ORDER: DayOfWeek[] = [1, 2, 3, 4, 5, 6, 0];
 
@@ -27,8 +34,10 @@ export default function AdminSettingsPage() {
   const [confirmReset, setConfirmReset] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
+  const [uploadingHero, setUploadingHero] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const faviconInputRef = useRef<HTMLInputElement>(null);
+  const heroInputRef = useRef<HTMLInputElement>(null);
 
   function set<K extends keyof SalonSettings>(k: K, v: SalonSettings[K]) {
     setS((prev) => ({ ...prev, [k]: v }));
@@ -73,6 +82,23 @@ export default function AdminSettingsPage() {
     } finally {
       setUploadingFavicon(false);
       if (faviconInputRef.current) faviconInputRef.current.value = "";
+    }
+  }
+
+  async function handleHeroFile(file: File) {
+    setUploadingHero(true);
+    try {
+      const dataUrl = await fileToHeroImageDataUrl(file);
+      set("heroImageUrl", dataUrl);
+      toast.success("Photo uploaded", "Press Save all settings to keep it.");
+    } catch (err) {
+      toast.error(
+        "Couldn't use that image",
+        err instanceof ImageUploadError ? err.message : "Try a different file.",
+      );
+    } finally {
+      setUploadingHero(false);
+      if (heroInputRef.current) heroInputRef.current.value = "";
     }
   }
 
@@ -365,6 +391,125 @@ export default function AdminSettingsPage() {
                 );
               })}
             </div>
+          </div>
+        </CardBody>
+      </Card>
+
+      {/* Homepage */}
+      <Card>
+        <CardBody className="space-y-5">
+          <div className="flex items-center gap-2">
+            <ImageIcon size={16} className="text-primary" />
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
+              Homepage
+            </h2>
+          </div>
+
+          <Field
+            label="Main photo"
+            hint="Shown large on your homepage. A tall portrait-style photo (people, treatments, your space) works best — falls back to a default stock photo when unset."
+          >
+            <div className="flex items-center gap-4">
+              <div className="h-24 w-20 shrink-0 overflow-hidden rounded-xl border border-dashed border-border-strong bg-surface-sunken">
+                {s.heroImageUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={s.heroImageUrl}
+                    alt="Homepage photo preview"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <ImageIcon size={18} className="text-muted" />
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <input
+                  ref={heroInputRef}
+                  type="file"
+                  accept="image/png,image/webp,image/jpeg,image/svg+xml"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleHeroFile(file);
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  loading={uploadingHero}
+                  onClick={() => heroInputRef.current?.click()}
+                >
+                  <ImagePlus size={14} /> {s.heroImageUrl ? "Replace photo" : "Upload photo"}
+                </Button>
+                {s.heroImageUrl ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => set("heroImageUrl", undefined)}
+                  >
+                    <Trash2 size={14} /> Remove
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+          </Field>
+
+          <Field
+            label="Main description"
+            hint="The paragraph shown next to your main photo. Leave blank to use the default."
+          >
+            <Textarea
+              rows={3}
+              value={s.heroDescription ?? ""}
+              onChange={(e) => set("heroDescription", e.target.value)}
+              placeholder={DEFAULT_HERO_DESCRIPTION}
+            />
+          </Field>
+
+          <div className="border-t border-border pt-4">
+            <p className="mb-3 text-[13px] font-medium text-muted-strong">
+              Social links
+            </p>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <Field label="Instagram">
+                <div className="flex items-center gap-2">
+                  <InstagramIcon size={16} className="shrink-0 text-muted" />
+                  <Input
+                    value={s.instagramUrl ?? ""}
+                    onChange={(e) => set("instagramUrl", e.target.value)}
+                    placeholder="instagram.com/yoursalon"
+                  />
+                </div>
+              </Field>
+              <Field label="TikTok">
+                <div className="flex items-center gap-2">
+                  <TiktokIcon size={16} className="shrink-0 text-muted" />
+                  <Input
+                    value={s.tiktokUrl ?? ""}
+                    onChange={(e) => set("tiktokUrl", e.target.value)}
+                    placeholder="tiktok.com/@yoursalon"
+                  />
+                </div>
+              </Field>
+              <Field label="Facebook">
+                <div className="flex items-center gap-2">
+                  <FacebookIcon size={16} className="shrink-0 text-muted" />
+                  <Input
+                    value={s.facebookUrl ?? ""}
+                    onChange={(e) => set("facebookUrl", e.target.value)}
+                    placeholder="facebook.com/yoursalon"
+                  />
+                </div>
+              </Field>
+            </div>
+            <p className="mt-2 text-xs text-muted">
+              Leave any of these blank to hide it. Shown as icons in your site&apos;s
+              footer.
+            </p>
           </div>
         </CardBody>
       </Card>
