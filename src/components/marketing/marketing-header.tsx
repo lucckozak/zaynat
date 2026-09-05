@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronDown, Menu, PlayCircle, Sparkles, X } from "lucide-react";
+import { ChevronDown, Images, Menu, PlayCircle, Sparkles, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BRAND_NAME } from "@/lib/brand";
 import { useAnchorNav } from "@/lib/use-anchor-nav";
@@ -71,6 +71,9 @@ export function MarketingHeader() {
               </div>
             ) : null}
           </div>
+          <LinkButton href="/tour" variant="outline" size="sm">
+            <Images size={15} /> Tour
+          </LinkButton>
           <LinkButton href="/site" variant="outline" size="sm">
             <PlayCircle size={15} /> Demo
           </LinkButton>
@@ -115,6 +118,9 @@ export function MarketingHeader() {
                 onClick={() => setOpen(false)}
               >
                 {BRAND_NAME} team login
+              </LinkButton>
+              <LinkButton href="/tour" variant="outline" size="sm" onClick={() => setOpen(false)}>
+                <Images size={15} /> Tour
               </LinkButton>
               <LinkButton href="/site" variant="outline" size="sm" onClick={() => setOpen(false)}>
                 <PlayCircle size={15} /> Demo
