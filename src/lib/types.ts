@@ -84,6 +84,31 @@ export interface TenantMeta {
 }
 
 /**
+ * A real owner's identity spans however many salon "locations" they run —
+ * each location is still a fully independent `TenantMeta` + `Database`
+ * (own staff, services, hours, customers), but they share one login and
+ * can be switched between from inside the dashboard. Kept as its own
+ * platform-level record (like `TenantMeta`) rather than folded into any
+ * one tenant's `Database`, since it deliberately outlives and spans them.
+ */
+export interface OwnerLocation {
+  salonId: string;
+  /** that location's own admin User.id, inside its own Database — needed to write a session there when switching */
+  adminUserId: string;
+}
+
+export interface OwnerAccount {
+  id: string;
+  email: string;
+  /** prototype only — plaintext for the mock auth layer, same as User.password */
+  password: string;
+  firstName: string;
+  lastName: string;
+  locations: OwnerLocation[];
+  createdAt: string;
+}
+
+/**
  * Configurable by the Zaynat team in Super Admin → Settings, shown on the
  * pricing page. Like employeeLimit already was, none of these limits are
  * mechanically enforced anywhere in this prototype (there's no concept yet

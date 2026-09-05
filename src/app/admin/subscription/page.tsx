@@ -1,20 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Ban,
+  Check,
   CircleSlash,
   Copy,
   ExternalLink,
   Globe,
+  MapPin,
+  Plus,
   Rocket,
   ShieldCheck,
   Unlink,
 } from "lucide-react";
-import type { DomainStatus, SubscriptionPlanId } from "@/lib/types";
+import type { DomainStatus, Emirate, OwnerAccount, SubscriptionPlanId } from "@/lib/types";
+import { EMIRATES } from "@/lib/types";
+import { useAuth, sessionKey } from "@/lib/auth";
 import { useTenant } from "@/lib/tenant";
-import { reactivateTenant, updateTenantMeta } from "@/lib/tenants";
+import { addLocationForOwner, getTenantMeta, reactivateTenant, updateTenantMeta } from "@/lib/tenants";
+import { ensureOwnerAccount, getOwnerAccount } from "@/lib/owner-accounts";
+import { SALON_PRESETS } from "@/lib/data/presets";
 import { listSubscriptionPlans } from "@/lib/subscription-plans";
 import { logAudit } from "@/lib/audit-log";
 import { BRAND_DOMAIN } from "@/lib/brand";
@@ -49,7 +56,8 @@ const DOMAIN_LABEL: Record<DomainStatus, string> = {
 const DOMAIN_RE = /^(?!-)[a-z0-9-]{1,63}(?<!-)(\.[a-z0-9-]{1,63})+$/i;
 
 export default function SubscriptionPage() {
-  const { tenant, refreshTenants } = useTenant();
+  const { tenant, refreshTenants, switchActiveSalon } = useTenant();
+  const { user } = useAuth();
   const toast = useToast();
   const plans = listSubscriptionPlans();
 
@@ -57,6 +65,45 @@ export default function SubscriptionPage() {
   const [domainDraft, setDomainDraft] = useState(tenant?.domain.custom ?? "");
   const [domainMode, setDomainMode] = useState<"subdomain" | "custom">(
     tenant?.domain.custom ? "custom" : "subdomain",
+  );
+
+  const [owner, setOwner] = useState<OwnerAccount | null>(null);
+  const [addLocationOpen, setAddLocationOpen] = useState(false);
+  const [newLabel, setNewLabel] = useState("");
+  const [newEmirate, setNewEmirate] = useState<Emirate>("Dubai");
+  const [newCity, setNewCity] = useState("Dubai");
+  const [newArea, setNewArea] = useState("");
+  const [addingLocation, setAddingLocation] = useState(false);
+
+  // Backfills an owner identity for admins who logged in before this
+  // feature existed — see ensureOwnerAccount — so "Locations" below works
+  // for every admin, not just ones created after it shipped.
+  useEffect(() => {
+    if (!tenant || !user) {
+      setOwner(null);
+      return;
+    }
+    setOwner(
+      ensureOwnerAccount({
+        salonId: tenant.id,
+        adminUserId: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        password: user.password,
+      }),
+    );
+  }, [tenant, user]);
+
+  const locations = useMemo(
+    () =>
+      (owner?.locations ?? [])
+        .map((loc) => {
+          const meta = getTenantMeta(loc.salonId);
+          return meta ? { salonId: loc.salonId, adminUserId: loc.adminUserId, meta } : null;
+        })
+        .filter((l): l is NonNullable<typeof l> => l !== null),
+    [owner],
   );
 
   if (!tenant) return null;
@@ -129,8 +176,67 @@ export default function SubscriptionPage() {
     );
   }
 
+  function switchLocation(salonId: string) {
+    const target = locations.find((l) => l.salonId === salonId);
+    if (!target) return;
+    try {
+      window.localStorage.setItem(sessionKey(salonId), target.adminUserId);
+    } catch {
+      /* ignore quota / privacy-mode errors */
+    }
+    switchActiveSalon(salonId);
+    toast.success(`Switched to ${target.meta.label}`);
+  }
+
+  function openAddLocation() {
+    setNewLabel("");
+    setNewEmirate("Dubai");
+    setNewCity("Dubai");
+    setNewArea("");
+    setAddLocationOpen(true);
+  }
+
+  function submitAddLocation() {
+    if (!owner) return;
+    if (!newLabel.trim()) {
+      toast.error("Enter a name for this location");
+      return;
+    }
+    setAddingLocation(true);
+    const result = addLocationForOwner(owner.id, {
+      label: newLabel.trim(),
+      emirate: newEmirate,
+      city: newCity.trim() || newEmirate,
+      area: newArea.trim() || "—",
+      // No template picker here, matching the self-registration flow —
+      // every new location starts from the same default preset and is
+      // fully editable afterwards from its own Settings.
+      presetId: SALON_PRESETS[0].id,
+      // Same plan as the location this was added from — simplest sensible
+      // default; the new location's own Subscription page can change it.
+      subscriptionPlan: tenant!.subscriptionPlan,
+    });
+    setAddingLocation(false);
+    if (!result) {
+      toast.error("Couldn't add that location");
+      return;
+    }
+    logAudit({
+      actor,
+      action: "Added location",
+      entity: result.meta.label,
+      meta: { ownerEmail: owner.email },
+    });
+    setOwner(getOwnerAccount(owner.id));
+    refreshTenants();
+    setAddLocationOpen(false);
+    toast.success(`${result.meta.label} added`, "Switch to it any time from the location list below.");
+  }
+
   const customDomainAllowed = plan?.customDomain ?? false;
   const domainConnected = Boolean(tenant.domain.custom) && tenant.domain.status !== "not_configured";
+  const salonLimit = plan?.salonLimit ?? 1;
+  const atLocationLimit = locations.length >= salonLimit;
 
   return (
     <div className="space-y-5">
@@ -368,6 +474,77 @@ export default function SubscriptionPage() {
             )}
           </CardBody>
         </Card>
+
+        <Card className="lg:col-span-2">
+          <CardBody className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-foreground">Locations</h3>
+              <Badge tone={atLocationLimit ? "warning" : "neutral"}>
+                {locations.length} of {salonLimit >= 999 ? "unlimited" : salonLimit}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted">
+              Run more than one salon? Add each as its own location — its own staff,
+              services, hours and customers — all reachable from this same login.
+            </p>
+
+            <ul className="space-y-2">
+              {locations.map((l) => {
+                const current = l.salonId === tenant.id;
+                return (
+                  <li
+                    key={l.salonId}
+                    className={cn(
+                      "flex items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5",
+                      current ? "border-primary/40 bg-primary-soft/30" : "border-border",
+                    )}
+                  >
+                    <span className="flex min-w-0 items-center gap-2.5">
+                      <MapPin size={15} className="shrink-0 text-muted" />
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-medium text-foreground">
+                          {l.meta.label}
+                        </span>
+                        <span className="block truncate text-xs text-muted">
+                          {l.meta.area}, {l.meta.emirate}
+                        </span>
+                      </span>
+                    </span>
+                    {current ? (
+                      <Badge tone="primary" className="shrink-0">
+                        <Check size={12} /> Current
+                      </Badge>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="shrink-0"
+                        onClick={() => switchLocation(l.salonId)}
+                      >
+                        Switch
+                      </Button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+
+            {atLocationLimit ? (
+              <div className="flex flex-col items-start gap-2 rounded-xl border border-dashed border-border-strong bg-surface-muted px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-sm text-muted">
+                  You&apos;ve reached this plan&apos;s location limit.
+                </p>
+                <Button size="sm" variant="outline" onClick={() => changePlan("premium")}>
+                  Upgrade for more locations
+                </Button>
+              </div>
+            ) : (
+              <Button size="sm" variant="outline" onClick={openAddLocation} disabled={!owner}>
+                <Plus size={14} /> Add another location
+              </Button>
+            )}
+          </CardBody>
+        </Card>
       </div>
 
       <Dialog
@@ -390,6 +567,50 @@ export default function SubscriptionPage() {
           This is simulated — pausing here stops nothing being billed in this prototype,
           same as it would stop your real subscription charges in production.
         </p>
+      </Dialog>
+
+      <Dialog
+        open={addLocationOpen}
+        onClose={() => setAddLocationOpen(false)}
+        title="Add a location"
+        description="Its own staff, services, hours and customers — separate from your other locations, same login."
+        footer={
+          <>
+            <Button variant="ghost" onClick={() => setAddLocationOpen(false)}>
+              Cancel
+            </Button>
+            <Button loading={addingLocation} onClick={submitAddLocation}>
+              Add location
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <Field label="Salon name" required>
+            <Input
+              value={newLabel}
+              onChange={(e) => setNewLabel(e.target.value)}
+              placeholder="e.g. Downtown Branch"
+            />
+          </Field>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label="Emirate" required>
+              <Select value={newEmirate} onChange={(e) => setNewEmirate(e.target.value as Emirate)}>
+                {EMIRATES.map((em) => (
+                  <option key={em} value={em}>
+                    {em}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="City">
+              <Input value={newCity} onChange={(e) => setNewCity(e.target.value)} />
+            </Field>
+            <Field label="Area">
+              <Input value={newArea} onChange={(e) => setNewArea(e.target.value)} placeholder="Jumeirah" />
+            </Field>
+          </div>
+        </div>
       </Dialog>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   BarChart3,
@@ -18,9 +18,16 @@ import {
 } from "lucide-react";
 import { RequireRole } from "@/components/auth/require-role";
 import { HydrationGate } from "@/components/hydration-gate";
-import { DashboardShell, type NavItem } from "@/components/layout/dashboard-shell";
+import {
+  DashboardShell,
+  type NavItem,
+} from "@/components/layout/dashboard-shell";
+import { LocationSwitcher } from "@/components/layout/location-switcher";
+import { useAuth, sessionKey } from "@/lib/auth";
 import { useTenant } from "@/lib/tenant";
-import { reactivateTenant } from "@/lib/tenants";
+import { getTenantMeta, reactivateTenant } from "@/lib/tenants";
+import { ensureOwnerAccount } from "@/lib/owner-accounts";
+import type { OwnerAccount } from "@/lib/types";
 import { logAudit } from "@/lib/audit-log";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
@@ -43,12 +50,56 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { tenant, refreshTenants } = useTenant();
+  const { tenant, refreshTenants, switchActiveSalon } = useTenant();
+  const { user } = useAuth();
   const toast = useToast();
   const [activating, setActivating] = useState(false);
+  const [owner, setOwner] = useState<OwnerAccount | null>(null);
 
   const suspendedByOperator = tenant?.suspension.suspended ?? false;
   const live = tenant?.subscriptionStatus === "active";
+
+  // Backfills an OwnerAccount for admins who logged in before this feature
+  // existed (see ensureOwnerAccount) — so the location switcher below works
+  // for every admin, not just ones created after it shipped.
+  useEffect(() => {
+    if (!tenant || !user) {
+      setOwner(null);
+      return;
+    }
+    setOwner(
+      ensureOwnerAccount({
+        salonId: tenant.id,
+        adminUserId: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        password: user.password,
+      }),
+    );
+  }, [tenant, user]);
+
+  const locations = useMemo(
+    () =>
+      (owner?.locations ?? [])
+        .map((loc) => {
+          const meta = getTenantMeta(loc.salonId);
+          return meta ? { salonId: loc.salonId, label: meta.label, adminUserId: loc.adminUserId } : null;
+        })
+        .filter((l): l is NonNullable<typeof l> => l !== null),
+    [owner],
+  );
+
+  function switchLocation(salonId: string) {
+    const target = locations.find((l) => l.salonId === salonId);
+    if (!target) return;
+    try {
+      window.localStorage.setItem(sessionKey(salonId), target.adminUserId);
+    } catch {
+      /* ignore quota / privacy-mode errors */
+    }
+    switchActiveSalon(salonId);
+  }
 
   function activate() {
     if (!tenant) return;
@@ -70,7 +121,19 @@ export default function AdminLayout({
   return (
     <HydrationGate fallback={null}>
       <RequireRole roles={["ADMIN"]}>
-        <DashboardShell nav={NAV} area="Admin">
+        <DashboardShell
+          nav={NAV}
+          area="Admin"
+          locationSwitcher={
+            locations.length > 1 ? (
+              <LocationSwitcher
+                locations={locations}
+                activeId={tenant?.id ?? ""}
+                onSwitch={switchLocation}
+              />
+            ) : undefined
+          }
+        >
           {suspendedByOperator ? (
             <div className="mb-5 flex items-start gap-3 rounded-2xl border border-warning/40 bg-warning-soft/40 px-4 py-3">
               <TriangleAlert size={18} className="mt-0.5 shrink-0 text-warning" />

@@ -3,8 +3,10 @@
 import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Sparkles } from "lucide-react";
-import { findOwnerAccount } from "@/lib/tenants";
+import { ChevronRight, MapPin, Sparkles } from "lucide-react";
+import { findOwnerAccount, getTenantMeta } from "@/lib/tenants";
+import { authenticateOwner } from "@/lib/owner-accounts";
+import type { OwnerAccount } from "@/lib/types";
 import { sessionKey } from "@/lib/auth";
 import { useTenant } from "@/lib/tenant";
 import { BRAND_NAME } from "@/lib/brand";
@@ -26,6 +28,11 @@ import { Field, Input } from "@/components/ui/field";
  * this looks the owner up across every salon (see findOwnerAccount), which
  * only makes sense because this prototype has no real per-salon domain to
  * send them to instead.
+ *
+ * An owner with more than one location (see `OwnerAccount` in types.ts)
+ * doesn't get auto-dropped into whichever one comes first — they see a
+ * "choose a location" step instead. A single-location owner (still the
+ * common case) skips straight past it, unchanged from before.
  */
 function OwnerLoginInner() {
   const router = useRouter();
@@ -35,6 +42,18 @@ function OwnerLoginInner() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [owner, setOwner] = useState<OwnerAccount | null>(null);
+
+  function enterLocation(salonId: string, userId: string) {
+    try {
+      window.localStorage.setItem(sessionKey(salonId), userId);
+    } catch {
+      /* ignore quota / privacy-mode errors */
+    }
+    refreshTenants();
+    switchActiveSalon(salonId);
+    router.push("/admin");
+  }
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -44,20 +63,79 @@ function OwnerLoginInner() {
       return;
     }
     setSubmitting(true);
-    const match = findOwnerAccount(email, password);
-    if (!match) {
+
+    const account = authenticateOwner(email, password);
+    if (account) {
+      if (account.locations.length > 1) {
+        setOwner(account); // show the location picker below
+        setSubmitting(false);
+        return;
+      }
+      const only = account.locations[0];
+      if (only) {
+        enterLocation(only.salonId, only.adminUserId);
+        return;
+      }
+    }
+
+    // Fall back to the legacy cross-tenant scan for owners created before
+    // OwnerAccount existed (or never backfilled) — always exactly one
+    // location, so no picker is possible or needed there.
+    const legacy = findOwnerAccount(email, password);
+    if (!legacy) {
       setError("No salon found for that email and password.");
       setSubmitting(false);
       return;
     }
-    try {
-      window.localStorage.setItem(sessionKey(match.salonId), match.userId);
-    } catch {
-      /* ignore quota / privacy-mode errors */
-    }
-    refreshTenants();
-    switchActiveSalon(match.salonId);
-    router.push("/admin");
+    enterLocation(legacy.salonId, legacy.userId);
+  }
+
+  if (owner) {
+    return (
+      <div className="zaynat-page mx-auto flex min-h-screen max-w-md flex-col justify-center px-4 py-12 sm:px-6">
+        <Link
+          href="/"
+          className="mb-8 flex items-center justify-center gap-2 text-center font-brand text-2xl font-semibold text-foreground"
+        >
+          <Sparkles className="text-primary" size={24} />
+          {BRAND_NAME}
+        </Link>
+        <div className="rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-card)] sm:p-8">
+          <h1 className="font-brand text-2xl font-semibold text-foreground">Choose a location</h1>
+          <p className="mt-1 text-sm text-muted">
+            {owner.firstName}, you run {owner.locations.length} salons on Zaynat.
+          </p>
+          <div className="mt-5 space-y-2">
+            {owner.locations.map((loc) => {
+              const meta = getTenantMeta(loc.salonId);
+              if (!meta) return null;
+              return (
+                <button
+                  key={loc.salonId}
+                  onClick={() => enterLocation(loc.salonId, loc.adminUserId)}
+                  className="flex w-full items-center justify-between gap-3 rounded-xl border border-border px-4 py-3 text-left transition-colors hover:border-primary/50 hover:bg-primary-soft/30"
+                >
+                  <span className="flex items-center gap-3">
+                    <MapPin size={16} className="shrink-0 text-primary" />
+                    <span>
+                      <span className="block text-sm font-medium text-foreground">{meta.label}</span>
+                      <span className="block text-xs text-muted">{meta.area}, {meta.emirate}</span>
+                    </span>
+                  </span>
+                  <ChevronRight size={16} className="shrink-0 text-muted" />
+                </button>
+              );
+            })}
+          </div>
+          <button
+            onClick={() => setOwner(null)}
+            className="mt-5 text-sm font-medium text-muted hover:text-foreground"
+          >
+            ← Use a different account
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (

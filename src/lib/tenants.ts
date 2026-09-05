@@ -2,6 +2,7 @@ import type { Emirate, SubscriptionPlanId, TenantMeta } from "./types";
 import { generateSeedDatabase, loadDatabase, resetDatabase, saveDatabase } from "./data/seed";
 import { getPreset } from "./data/presets";
 import { uid } from "./utils";
+import { addLocationToOwner, createOwnerAccount, getOwnerAccount } from "./owner-accounts";
 
 const INDEX_KEY = "platform:tenants";
 const ACTIVE_KEY = "platform:activeSalon";
@@ -137,10 +138,16 @@ export interface RegisterSalonInput extends CreateTenantInput {
  * the whole reason this is a separate function rather than something a
  * caller bolts on afterwards is that patching the admin user must happen
  * before anyone can sign in with the credentials they just typed.
+ *
+ * Also mints this owner's `OwnerAccount` identity, seeded with this one
+ * location — every location they add after this (see
+ * `addLocationForOwner`) reuses this same identity/login rather than
+ * creating a new one, so "one account, several locations" starts here.
  */
 export function registerSalon(input: RegisterSalonInput): {
   meta: TenantMeta;
   adminUserId: string | null;
+  ownerId: string | null;
 } {
   const { ownerFirstName, ownerLastName, ownerEmail, ownerPhone, ownerPassword, ...tenantInput } =
     input;
@@ -148,6 +155,7 @@ export function registerSalon(input: RegisterSalonInput): {
 
   const db = loadDatabase(meta.id);
   let adminUserId: string | null = null;
+  let ownerId: string | null = null;
   if (db) {
     const admin = db.users.find((u) => u.role === "ADMIN");
     if (admin) {
@@ -158,6 +166,49 @@ export function registerSalon(input: RegisterSalonInput): {
       admin.password = ownerPassword;
       adminUserId = admin.id;
       saveDatabase(meta.id, db);
+
+      ownerId = createOwnerAccount({
+        firstName: ownerFirstName,
+        lastName: ownerLastName,
+        email: ownerEmail,
+        password: ownerPassword,
+        location: { salonId: meta.id, adminUserId: admin.id },
+      }).id;
+    }
+  }
+
+  return { meta, adminUserId, ownerId };
+}
+
+/**
+ * Adds a new location to an existing owner — same login, a brand-new
+ * tenant + Database (its own staff, services, hours, customers; nothing
+ * shared with the owner's other locations except the account that can
+ * switch between them). The new location's seeded admin user is patched
+ * to the owner's own email/password (never the preset's demo login), so
+ * signing in anywhere lands the same person on whichever location they
+ * pick.
+ */
+export function addLocationForOwner(
+  ownerId: string,
+  input: CreateTenantInput,
+): { meta: TenantMeta; adminUserId: string | null } | null {
+  const owner = getOwnerAccount(ownerId);
+  if (!owner) return null;
+
+  const meta = createTenant(input);
+  const db = loadDatabase(meta.id);
+  let adminUserId: string | null = null;
+  if (db) {
+    const admin = db.users.find((u) => u.role === "ADMIN");
+    if (admin) {
+      admin.firstName = owner.firstName;
+      admin.lastName = owner.lastName;
+      admin.email = owner.email;
+      admin.password = owner.password;
+      adminUserId = admin.id;
+      saveDatabase(meta.id, db);
+      addLocationToOwner(ownerId, { salonId: meta.id, adminUserId: admin.id });
     }
   }
 

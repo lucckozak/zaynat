@@ -20,10 +20,13 @@ export interface NavItem {
 export function DashboardShell({
   nav,
   area,
+  locationSwitcher,
   children,
 }: {
   nav: NavItem[];
   area: string;
+  /** rendered under the brand mark — see `admin/layout.tsx` + `LocationSwitcher`; omitted entirely for a single-location owner */
+  locationSwitcher?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -69,6 +72,7 @@ export function DashboardShell({
         <p className="mt-0.5 text-xs font-medium uppercase tracking-[0.18em] text-accent">
           {area}
         </p>
+        {locationSwitcher ? <div className="mt-3">{locationSwitcher}</div> : null}
       </div>
       <div className="flex-1 overflow-y-auto px-3">{navLinks}</div>
       <div className="border-t border-border p-3">
