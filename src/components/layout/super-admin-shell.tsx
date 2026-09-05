@@ -76,7 +76,7 @@ export function SuperAdminShell({ children }: { children: React.ReactNode }) {
           href="/"
           className="mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-strong hover:bg-surface-sunken hover:text-foreground"
         >
-          <ArrowUpRight size={17} /> Back to demo site
+          <ArrowUpRight size={17} /> View marketing site
         </Link>
         <button
           onClick={signOut}

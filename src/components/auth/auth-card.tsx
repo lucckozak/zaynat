@@ -39,7 +39,7 @@ export function AuthShell({
   return (
     <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-md flex-col justify-center px-4 py-12 sm:px-6">
       <Link
-        href="/"
+        href="/site"
         className="mb-8 text-center font-serif text-2xl font-semibold text-foreground"
       >
         {db.settings.name || "Maison Lumière"}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   Check,
   Copy,
@@ -34,7 +34,9 @@ const ROLE_LABEL: Record<Role, string> = {
 
 function appRoot() {
   if (typeof window === "undefined") return "";
-  return `${window.location.origin}/`;
+  // salon storefronts live at /site (the bare "/" is the platform's own
+  // marketing homepage) — a share link should land on the salon, not there.
+  return `${window.location.origin}/site/`;
 }
 
 export function DemoPanel() {
@@ -42,9 +44,19 @@ export function DemoPanel() {
   const { role, viewAs } = useAuth();
   const { salonId, tenant, tenants, switchActiveSalon } = useTenant();
   const router = useRouter();
+  const pathname = usePathname();
   const toast = useToast();
   const [open, setOpen] = useState(false);
   const [hidden, setHidden] = useState(true);
+
+  // This is prototype tooling for switching between simulated salon
+  // tenants — it has no place on the platform's own marketing site, the
+  // (not-yet-built) marketplace, or the Super Admin console, which are not
+  // scoped to any one salon.
+  const onSalonRoute =
+    !pathname.startsWith("/super-admin") &&
+    pathname !== "/" &&
+    !pathname.startsWith("/find");
 
   useEffect(() => {
     try {
@@ -60,7 +72,7 @@ export function DemoPanel() {
     }
   }, []);
 
-  if (!hydrated || hidden) return null;
+  if (!hydrated || hidden || !onSalonRoute) return null;
 
   function pickRole(r: Role) {
     if (viewAs(r)) {
@@ -79,7 +91,7 @@ export function DemoPanel() {
     // each tenant remembers its own last session (see src/lib/auth.tsx), so
     // this either restores whoever was signed in there before or lands
     // logged-out on that salon's public site — no manual re-attach needed.
-    router.push("/");
+    router.push("/site");
     const label = tenants.find((t) => t.id === id)?.label ?? "salon";
     toast.success(`Switched to ${label}`);
     setOpen(false);

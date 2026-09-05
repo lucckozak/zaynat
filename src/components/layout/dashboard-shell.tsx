@@ -61,7 +61,7 @@ export function DashboardShell({
   const sidebarContent = (
     <div className="flex h-full flex-col">
       <div className="px-3 py-5">
-        <Link href="/" className="font-serif text-lg font-semibold text-foreground">
+        <Link href="/site" className="font-serif text-lg font-semibold text-foreground">
           {db.settings.name || "Maison Lumière"}
         </Link>
         <p className="mt-0.5 text-xs font-medium uppercase tracking-[0.18em] text-accent">
@@ -71,7 +71,7 @@ export function DashboardShell({
       <div className="flex-1 overflow-y-auto px-3">{navLinks}</div>
       <div className="border-t border-border p-3">
         <Link
-          href="/"
+          href="/site"
           className="mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-strong hover:bg-surface-sunken hover:text-foreground"
         >
           <ArrowUpRight size={17} /> Back to site

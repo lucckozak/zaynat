@@ -104,7 +104,7 @@ function SalonDetailInner() {
         action={
           <div className="flex items-center gap-2">
             <a
-              href={`/?salon=${meta.slug}`}
+              href={`/site?salon=${meta.slug}`}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-1.5 rounded-full border border-border px-3.5 py-2 text-xs font-medium text-foreground hover:border-primary/50"

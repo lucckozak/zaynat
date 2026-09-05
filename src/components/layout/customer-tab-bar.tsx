@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 
 const ITEMS = [
-  { href: "/", label: "Home", icon: Home },
+  { href: "/site", label: "Home", icon: Home },
   { href: "/book", label: "Book", icon: CalendarDays },
   { href: "/account/appointments", label: "Bookings", icon: CalendarHeart },
   { href: "/account", label: "Profile", icon: UserRound },
@@ -23,7 +23,9 @@ export function CustomerTabBar() {
       <div className="mx-auto flex max-w-md items-stretch justify-around px-2 py-1.5">
         {ITEMS.map(({ href, label, icon: Icon }) => {
           const active =
-            href === "/" ? pathname === "/" : pathname === href;
+            href === "/site"
+              ? pathname === "/site" || pathname === "/site/"
+              : pathname === href;
           return (
             <Link
               key={href}

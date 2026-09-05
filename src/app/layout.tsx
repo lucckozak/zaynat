@@ -17,12 +17,16 @@ const cormorant = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
+  // Most pages in this app are client components (App Router metadata only
+  // applies from server components), so this default title/description is
+  // what actually shows for almost every route — the marketing homepage and
+  // /find override it since those two are server components.
   title: {
-    default: "Maison Lumière — Beauty, tailored to you",
-    template: "%s · Maison Lumière",
+    default: "UAE Salon Platform",
+    template: "%s · UAE Salon Platform",
   },
   description:
-    "A modern cosmetics salon booking experience. Browse treatments, choose your specialist, and reserve your appointment in under two minutes.",
+    "A multi-tenant booking platform for UAE salons — branded booking sites, appointment management, and a Super Admin console, in one prototype.",
 };
 
 export default function RootLayout({
