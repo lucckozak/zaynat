@@ -10,8 +10,10 @@ export default function SuperAdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  // the login page renders its own centered card — no sidebar, no guard
-  if (pathname === "/super-admin/login") return <>{children}</>;
+  // the login page renders its own centered card — no sidebar, no guard.
+  // `trailingSlash: true` (next.config.ts) means this is "/super-admin/login/"
+  // in production, so match with startsWith rather than an exact string.
+  if (pathname.startsWith("/super-admin/login")) return <>{children}</>;
 
   return (
     <RequireSuperAdmin>

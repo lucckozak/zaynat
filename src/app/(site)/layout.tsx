@@ -26,7 +26,9 @@ export default function SiteLayout({
     ready &&
     tenant &&
     (tenant.subscriptionStatus === "suspended" || tenant.subscriptionStatus === "cancelled") &&
-    !ALWAYS_ALLOWED.includes(pathname);
+    // `trailingSlash: true` (next.config.ts) means pathname is e.g.
+    // "/login/" in production — match with startsWith, not equality.
+    !ALWAYS_ALLOWED.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
   if (suspended) {
     return (
