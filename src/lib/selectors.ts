@@ -172,12 +172,19 @@ export function salonRating(db: Pick<Database, "reviews" | "employees">): Rating
   return { average: Math.round(average * 10) / 10, count, isReal: false };
 }
 
-/** Visible "session" reviews for one specialist, most recent first. */
-export function reviewsForEmployee(db: Pick<Database, "reviews" | "users">, employeeId: string) {
+/** Visible "session" reviews for one specialist, most recent first — each with its exact treatment resolved. */
+export function reviewsForEmployee(
+  db: Pick<Database, "reviews" | "users" | "services">,
+  employeeId: string,
+) {
   return db.reviews
     .filter((r) => r.employeeId === employeeId && r.visible)
     .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))
-    .map((r) => ({ review: r, customer: db.users.find((u) => u.id === r.customerId) }));
+    .map((r) => ({
+      review: r,
+      customer: db.users.find((u) => u.id === r.customerId),
+      service: db.services.find((s) => s.id === r.serviceId),
+    }));
 }
 
 /** Visible overall "salon" reviews, most recent first — for a homepage "what our clients say" section. */

@@ -155,7 +155,7 @@ function ProfileInner() {
                 What customers say
               </h2>
               <div className="mt-3 space-y-3">
-                {reviews.slice(0, 6).map(({ review, customer }) => (
+                {reviews.slice(0, 6).map(({ review, customer, service }) => (
                   <div
                     key={review.id}
                     className="rounded-xl border border-border bg-surface px-4 py-3.5"
@@ -179,8 +179,11 @@ function ProfileInner() {
                         {fmt.mediumDate(review.createdAt)}
                       </span>
                     </div>
+                    {service ? (
+                      <p className="mt-1.5 text-xs font-medium text-accent">{service.name}</p>
+                    ) : null}
                     {review.comment ? (
-                      <p className="mt-2 text-sm leading-relaxed text-muted-strong">
+                      <p className="mt-1.5 text-sm leading-relaxed text-muted-strong">
                         {review.comment}
                       </p>
                     ) : null}

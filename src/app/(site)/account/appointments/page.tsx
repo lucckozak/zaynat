@@ -28,6 +28,9 @@ export default function CustomerAppointmentsPage() {
 
   if (!user) return null;
 
+  const reviewingAppt = reviewId ? db.appointments.find((a) => a.id === reviewId) : undefined;
+  const reviewingView = reviewingAppt ? viewAppointment(db, reviewingAppt) : undefined;
+
   const list =
     tab === "upcoming"
       ? upcomingAppointments(db, { customerId: user.id })
@@ -137,16 +140,8 @@ export default function CustomerAppointmentsPage() {
       />
       <ReviewDialog
         appointmentId={reviewId}
-        employeeName={
-          reviewId
-            ? (() => {
-                const appt = db.appointments.find((x) => x.id === reviewId);
-                const emp = appt && db.employees.find((e) => e.id === appt.employeeId);
-                const empUser = emp && db.users.find((u) => u.id === emp.userId);
-                return empUser ? fullName(empUser) : undefined;
-              })()
-            : undefined
-        }
+        employeeName={reviewingView?.employeeUser ? fullName(reviewingView.employeeUser) : undefined}
+        serviceName={reviewingView?.service?.name}
         open={!!reviewId}
         onClose={() => setReviewId(null)}
       />

@@ -58,6 +58,7 @@ describe("review moderation (visible flag)", () => {
   it("reviewsForEmployee never returns a hidden or a 'salon'-kind review", () => {
     const db = {
       users: [],
+      services: [],
       reviews: [
         makeReview({ id: "r1", kind: "session", employeeId: "emp_1", visible: true }),
         makeReview({ id: "r2", kind: "session", employeeId: "emp_1", visible: false }),

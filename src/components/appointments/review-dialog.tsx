@@ -13,11 +13,13 @@ import { cn } from "@/lib/utils";
 export function ReviewDialog({
   appointmentId,
   employeeName,
+  serviceName,
   open,
   onClose,
 }: {
   appointmentId: string | null;
   employeeName?: string;
+  serviceName?: string;
   open: boolean;
   onClose: () => void;
 }) {
@@ -58,7 +60,15 @@ export function ReviewDialog({
         reset();
         onClose();
       }}
-      title={employeeName ? `Rate your visit with ${employeeName}` : "Rate your visit"}
+      title={
+        serviceName && employeeName
+          ? `Rate your ${serviceName} with ${employeeName}`
+          : employeeName
+            ? `Rate your visit with ${employeeName}`
+            : serviceName
+              ? `Rate your ${serviceName}`
+              : "Rate your visit"
+      }
       description="Your review is shown publicly on the specialist's profile."
       footer={
         <>

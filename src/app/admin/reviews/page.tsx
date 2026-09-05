@@ -38,6 +38,11 @@ export default function AdminReviewsPage() {
     return u ? fullName(u) : null;
   }
 
+  function serviceName(serviceId?: string) {
+    if (!serviceId) return null;
+    return db.services.find((s) => s.id === serviceId)?.name ?? null;
+  }
+
   return (
     <div className="space-y-5">
       <PageHeading
@@ -65,6 +70,7 @@ export default function AdminReviewsPage() {
         <div className="space-y-3">
           {reviews.map((r) => {
             const emp = employeeName(r.employeeId);
+            const svc = serviceName(r.serviceId);
             return (
               <Card key={r.id} className={r.visible ? undefined : "opacity-60"}>
                 <CardBody className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -91,6 +97,7 @@ export default function AdminReviewsPage() {
                     )}
                     <p className="mt-2 text-xs text-muted">
                       {customerName(r.customerId)}
+                      {svc ? ` · ${svc}` : ""}
                       {emp ? ` · with ${emp}` : ""} · {fmt.mediumDate(r.createdAt)}
                     </p>
                   </div>
