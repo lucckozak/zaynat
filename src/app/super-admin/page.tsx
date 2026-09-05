@@ -48,7 +48,7 @@ export default function SuperAdminDashboardPage() {
     <div>
       <PageHeading
         title="Platform Dashboard"
-        description="Simulated multi-tenant demo — data lives in this browser only."
+        description="Visible only to you, the Zaynat team — an overview of every salon using the platform. (Simulated multi-tenant demo — data lives in this browser only.)"
       />
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">

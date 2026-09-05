@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
 import { useSuperAdmin } from "@/lib/super-admin-auth";
+import { BRAND_NAME } from "@/lib/brand";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 
@@ -37,11 +38,13 @@ function LoginInner() {
         className="mb-8 flex items-center justify-center gap-2 text-center font-serif text-2xl font-semibold text-foreground"
       >
         <ShieldCheck className="text-primary" size={24} />
-        UAE Salon Platform
+        {BRAND_NAME}
       </Link>
       <div className="rounded-2xl border border-border bg-surface p-6 shadow-[var(--shadow-card)] sm:p-8">
-        <h1 className="font-serif text-2xl font-medium text-foreground">Platform Super Admin</h1>
-        <p className="mt-1 text-sm text-muted">Manage salons, subscriptions and the marketplace.</p>
+        <h1 className="font-serif text-2xl font-medium text-foreground">Team login</h1>
+        <p className="mt-1 text-sm text-muted">
+          For {BRAND_NAME}&apos;s own team only — manage every salon on the platform.
+        </p>
         <form onSubmit={submit} className="mt-6 space-y-4">
           <Field label="Email" required>
             <Input

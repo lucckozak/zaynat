@@ -38,11 +38,11 @@ export const metadata: Metadata = {
   // what actually shows for almost every route — the marketing homepage and
   // /find override it since those two are server components.
   title: {
-    default: "UAE Salon Platform",
-    template: "%s · UAE Salon Platform",
+    default: "Zaynat",
+    template: "%s · Zaynat",
   },
   description:
-    "A multi-tenant booking platform for UAE salons — branded booking sites, appointment management, and a Super Admin console, in one prototype.",
+    "Zaynat is booking software for UAE salons — your own branded booking site, appointment management, and direct-to-you payments, all in one place.",
 };
 
 export default function RootLayout({
