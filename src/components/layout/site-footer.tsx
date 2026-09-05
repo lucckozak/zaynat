@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useStore } from "@/lib/store";
 import { DAY_LABELS_SHORT } from "@/lib/types";
 import { toHref } from "@/lib/utils";
+import { useLocale } from "@/lib/i18n";
 import { FacebookIcon, InstagramIcon, TiktokIcon } from "@/components/ui/social-icons";
 
 export function SiteFooter() {
   const { db } = useStore();
+  const { t } = useLocale();
   const s = db.settings;
 
   const socials = [
@@ -32,7 +34,7 @@ export function SiteFooter() {
 
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
-            Visit
+            {t("footerVisit")}
           </p>
           <p className="mt-3 text-sm text-muted-strong">{s.address}</p>
           <p className="mt-2 text-sm text-muted-strong">{s.phone}</p>
@@ -57,14 +59,14 @@ export function SiteFooter() {
 
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
-            Opening hours
+            {t("footerOpeningHours")}
           </p>
           <ul className="mt-3 space-y-1 text-sm text-muted-strong">
             {s.openingHours.map((o) => (
               <li key={o.dayOfWeek} className="flex justify-between gap-4">
                 <span>{DAY_LABELS_SHORT[o.dayOfWeek]}</span>
                 <span>
-                  {o.open && o.close ? `${o.open}–${o.close}` : "Closed"}
+                  {o.open && o.close ? `${o.open}–${o.close}` : t("closed")}
                 </span>
               </li>
             ))}
@@ -74,16 +76,18 @@ export function SiteFooter() {
 
       <div className="border-t border-border">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-6 text-xs text-muted sm:flex-row sm:px-6">
-          <p>© {new Date().getFullYear()} {s.name || "Maison Lumière"}. Prototype.</p>
+          <p>
+            © {new Date().getFullYear()} {s.name || "Maison Lumière"}. {t("footerPrototype")}
+          </p>
           <div className="flex gap-4">
             <Link href="/services" className="hover:text-foreground">
-              Treatments
+              {t("footerTreatments")}
             </Link>
             <Link href="/employees" className="hover:text-foreground">
-              Specialists
+              {t("footerSpecialists")}
             </Link>
             <Link href="/book" className="hover:text-foreground">
-              Book
+              {t("footerBook")}
             </Link>
           </div>
         </div>

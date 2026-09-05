@@ -5,17 +5,20 @@ import { usePathname } from "next/navigation";
 import { CalendarDays, CalendarHeart, Home, UserRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
-
-const ITEMS = [
-  { href: "/site", label: "Home", icon: Home },
-  { href: "/book", label: "Book", icon: CalendarDays },
-  { href: "/account/appointments", label: "Bookings", icon: CalendarHeart },
-  { href: "/account", label: "Profile", icon: UserRound },
-];
+import { useLocale } from "@/lib/i18n";
 
 export function CustomerTabBar() {
   const pathname = usePathname();
   const { role } = useAuth();
+  const { t } = useLocale();
+
+  const ITEMS = [
+    { href: "/site", label: t("tabHome"), icon: Home },
+    { href: "/book", label: t("tabBook"), icon: CalendarDays },
+    { href: "/account/appointments", label: t("tabBookings"), icon: CalendarHeart },
+    { href: "/account", label: t("tabProfile"), icon: UserRound },
+  ];
+
   if (role !== "CUSTOMER") return null;
 
   return (

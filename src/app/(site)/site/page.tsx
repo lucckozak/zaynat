@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { salonRating, employeeRating } from "@/lib/selectors";
+import { useLocale } from "@/lib/i18n";
 import { fullName } from "@/lib/utils";
 import { LinkButton } from "@/components/ui/button";
 import { SectionTitle } from "@/components/ui/card";
@@ -44,6 +45,7 @@ const BENEFITS = [
 
 export default function HomePage() {
   const { db, hydrated } = useStore();
+  const { t } = useLocale();
   const popular = db.services.filter((s) => s.active && s.popular).slice(0, 6);
   const services = popular.length
     ? popular
@@ -68,21 +70,21 @@ export default function HomePage() {
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <LinkButton href="/book" size="lg">
-                Book an appointment
+                {t("heroBookAppointment")}
               </LinkButton>
               <LinkButton href="/services" variant="outline" size="lg">
-                Explore treatments
+                {t("heroExploreTreatments")}
               </LinkButton>
             </div>
             <div className="mt-8 flex items-center gap-6 text-sm text-muted">
               {rating.average != null ? (
                 <span className="inline-flex items-center gap-2">
                   <Star size={15} className="fill-accent text-accent" />
-                  {rating.average.toFixed(1)} average rating
+                  {rating.average.toFixed(1)} {t("heroAverageRating")}
                 </span>
               ) : null}
               <span className="inline-flex items-center gap-2">
-                <Clock3 size={15} /> Open 7 days
+                <Clock3 size={15} /> {t("heroOpenDays")}
               </span>
             </div>
           </div>
@@ -97,7 +99,7 @@ export default function HomePage() {
             />
             <div className="absolute -bottom-6 -left-6 hidden w-52 rounded-2xl border border-border bg-surface p-4 shadow-[var(--shadow-pop)] sm:block">
               <p className="font-serif text-2xl text-foreground">1,284</p>
-              <p className="text-xs text-muted">clients cared for this year</p>
+              <p className="text-xs text-muted">{t("heroClientsCared")}</p>
             </div>
           </div>
         </div>
