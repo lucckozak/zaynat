@@ -98,6 +98,14 @@ interface StoreValue {
     rating: number;
     comment?: string;
   }) => { ok: boolean; error?: string };
+  /** An overall salon rating — requires at least one COMPLETED appointment, one per customer. */
+  addSalonReview: (input: {
+    customerId: string;
+    rating: number;
+    comment?: string;
+  }) => { ok: boolean; error?: string };
+  /** Admin-only moderation: hide/unhide a review from every public rating/list. Never edits its content. */
+  setReviewVisibility: (reviewId: string, visible: boolean) => void;
 
   // services
   saveService: (svc: Service) => void;
@@ -393,6 +401,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
         const review: Review = {
           id: uid("rev"),
+          kind: "session",
           appointmentId: appt.id,
           customerId: input.customerId,
           employeeId: appt.employeeId,
@@ -400,10 +409,41 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           rating: Math.round(input.rating),
           comment: input.comment?.trim() || undefined,
           createdAt: new Date().toISOString(),
+          visible: true,
         };
         mutate((prev) => ({ ...prev, reviews: [...prev.reviews, review] }));
         return { ok: true };
       },
+
+      addSalonReview: (input) => {
+        const hasCompletedVisit = safeDb.appointments.some(
+          (a) => a.customerId === input.customerId && a.status === "COMPLETED",
+        );
+        if (!hasCompletedVisit)
+          return { ok: false, error: "You can only rate us after a completed visit." };
+        if (safeDb.reviews.some((r) => r.kind === "salon" && r.customerId === input.customerId))
+          return { ok: false, error: "You've already rated us — thank you!" };
+        if (!Number.isFinite(input.rating) || input.rating < 1 || input.rating > 5)
+          return { ok: false, error: "Rating must be between 1 and 5." };
+
+        const review: Review = {
+          id: uid("rev"),
+          kind: "salon",
+          customerId: input.customerId,
+          rating: Math.round(input.rating),
+          comment: input.comment?.trim() || undefined,
+          createdAt: new Date().toISOString(),
+          visible: true,
+        };
+        mutate((prev) => ({ ...prev, reviews: [...prev.reviews, review] }));
+        return { ok: true };
+      },
+
+      setReviewVisibility: (reviewId, visible) =>
+        mutate((prev) => ({
+          ...prev,
+          reviews: prev.reviews.map((r) => (r.id === reviewId ? { ...r, visible } : r)),
+        })),
 
       saveService: (svc) =>
         mutate((prev) => ({

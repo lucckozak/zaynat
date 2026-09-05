@@ -36,7 +36,7 @@ import { getPreset, type SalonPreset } from "./presets";
 // `reviews`) — a mismatch makes loadDatabase() return null so every
 // tenant regenerates fresh seed data instead of crashing on old,
 // now-incomplete cached JSON.
-const STORAGE_VERSION = 8;
+const STORAGE_VERSION = 9;
 
 const ADMIN_USER = STAFF_USERS.find((u) => u.role === "ADMIN")!;
 
@@ -470,12 +470,14 @@ const REVIEW_COMMENTS = [
  */
 function seedReviews(db: Database, rnd: () => number): Review[] {
   const reviews: Review[] = [];
+
   for (const appt of db.appointments) {
     if (appt.status !== "COMPLETED") continue;
     if (rnd() > 0.4) continue;
     const rating = rnd() < 0.75 ? 5 : rnd() < 0.7 ? 4 : 3;
     reviews.push({
       id: `rev_seed_${reviews.length + 1}`,
+      kind: "session",
       appointmentId: appt.id,
       customerId: appt.customerId,
       employeeId: appt.employeeId,
@@ -483,8 +485,29 @@ function seedReviews(db: Database, rnd: () => number): Review[] {
       rating,
       comment: REVIEW_COMMENTS[Math.floor(rnd() * REVIEW_COMMENTS.length)],
       createdAt: addDays(new Date(appt.end), 1 + Math.floor(rnd() * 3)).toISOString(),
+      visible: true,
     });
   }
+
+  // A handful of overall "rate the salon" reviews too, one per customer
+  // at most, from customers who already have a completed visit.
+  const completedCustomers = [
+    ...new Set(db.appointments.filter((a) => a.status === "COMPLETED").map((a) => a.customerId)),
+  ];
+  for (const customerId of completedCustomers) {
+    if (rnd() > 0.35) continue;
+    const rating = rnd() < 0.75 ? 5 : rnd() < 0.7 ? 4 : 3;
+    reviews.push({
+      id: `rev_seed_${reviews.length + 1}`,
+      kind: "salon",
+      customerId,
+      rating,
+      comment: REVIEW_COMMENTS[Math.floor(rnd() * REVIEW_COMMENTS.length)],
+      createdAt: addDays(new Date(), -Math.floor(rnd() * 30)).toISOString(),
+      visible: true,
+    });
+  }
+
   return reviews;
 }
 

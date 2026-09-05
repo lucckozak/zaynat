@@ -376,23 +376,38 @@ export interface Database {
 }
 
 /**
- * A real customer review — only ever created for an appointment that
- * customer actually had, once it's COMPLETED (see `addReview` in
- * store.tsx), one per appointment. This replaces the seeded
- * `Employee.rating`/`reviewCount` numbers as the source of truth for a
- * salon's displayed rating the moment at least one real review exists —
- * see `employeeRating`/`salonRating` in selectors.ts.
+ * A real customer review, one of two kinds:
+ *  - "session": rates one specific COMPLETED appointment (and therefore
+ *    that appointment's employee/service) — appointmentId/employeeId/
+ *    serviceId are all set. One per appointment (see `addReview`).
+ *  - "salon": an overall rating of the salon as a whole, not tied to one
+ *    appointment/employee — appointmentId/employeeId/serviceId are all
+ *    unset. Still gated on having at least one COMPLETED appointment (so
+ *    it's a real customer), one per customer (see `addSalonReview`).
+ * Both kinds only ever exist once a customer actually submits one — this
+ * replaces the seeded `Employee.rating`/`reviewCount` numbers as the
+ * source of truth the moment at least one exists; see
+ * `employeeRating`/`salonRating` in selectors.ts, which combine both
+ * kinds into the salon's overall rating (a session review still reflects
+ * on the salon as a whole) while `reviewsForEmployee` only ever sees
+ * "session" reviews (they're the only kind with an employeeId at all).
+ *
+ * `visible` is the salon owner's own moderation control (Admin →
+ * Reviews) — a hidden review is excluded from every public rating/list,
+ * not just softened; the owner can hide or unhide, never edit content.
  */
 export interface Review {
   id: string;
-  appointmentId: string;
+  kind: "salon" | "session";
+  appointmentId?: string;
   customerId: string;
-  employeeId: string;
-  serviceId: string;
+  employeeId?: string;
+  serviceId?: string;
   /** 1-5 */
   rating: number;
   comment?: string;
   createdAt: string;
+  visible: boolean;
 }
 
 export interface EmailMessage {

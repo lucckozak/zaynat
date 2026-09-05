@@ -9,7 +9,7 @@ import {
   Star,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
-import { salonRating, employeeRating } from "@/lib/selectors";
+import { salonRating, salonReviews, employeeRating } from "@/lib/selectors";
 import { useLocale } from "@/lib/i18n";
 import { fullName } from "@/lib/utils";
 import { LinkButton } from "@/components/ui/button";
@@ -52,6 +52,7 @@ export default function HomePage() {
     : db.services.filter((s) => s.active).slice(0, 6);
   const team = db.employees.filter((e) => e.active).slice(0, 4);
   const rating = salonRating(db);
+  const clientReviews = salonReviews(db);
 
   return (
     <div>
@@ -186,6 +187,43 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* What our clients say */}
+      {clientReviews.length > 0 ? (
+        <section className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
+          <SectionTitle
+            eyebrow="Reviews"
+            title="What our clients say"
+            align="center"
+          />
+          <div className="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-3">
+            {clientReviews.slice(0, 3).map(({ review, customer }) => (
+              <div
+                key={review.id}
+                className="rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]"
+              >
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      size={14}
+                      className={i < review.rating ? "fill-accent text-accent" : "text-border-strong"}
+                    />
+                  ))}
+                </div>
+                {review.comment ? (
+                  <p className="mt-3 text-sm leading-relaxed text-muted-strong">
+                    &ldquo;{review.comment}&rdquo;
+                  </p>
+                ) : null}
+                <p className="mt-3 text-xs text-muted">
+                  {customer ? customer.firstName : "A customer"}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       {/* CTA */}
       <section className="mx-auto max-w-6xl px-4 pb-8 sm:px-6">

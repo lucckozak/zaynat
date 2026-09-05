@@ -11,6 +11,7 @@ import {
   Rocket,
   Scissors,
   Settings,
+  Star,
   Tag,
   TriangleAlert,
   Users,
@@ -41,6 +42,7 @@ const NAV: NavItem[] = [
   { href: "/admin/services", label: "Services", icon: Scissors },
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/marketing", label: "Marketing", icon: Tag },
+  { href: "/admin/reviews", label: "Reviews", icon: Star },
   { href: "/admin/subscription", label: "Subscription", icon: CreditCard },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
