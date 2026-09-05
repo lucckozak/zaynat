@@ -97,7 +97,7 @@ function OwnerLoginInner() {
       <p className="mt-6 text-center text-sm text-muted">
         New here?{" "}
         <Link href="/register-salon" className="font-medium text-primary hover:text-primary-hover">
-          Create your salon
+          Get your salon online
         </Link>
       </p>
     </div>
