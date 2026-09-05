@@ -369,6 +369,27 @@ export interface Database {
   emailLog: EmailMessage[];
   coupons: Coupon[];
   giftCards: GiftCard[];
+  reviews: Review[];
+}
+
+/**
+ * A real customer review — only ever created for an appointment that
+ * customer actually had, once it's COMPLETED (see `addReview` in
+ * store.tsx), one per appointment. This replaces the seeded
+ * `Employee.rating`/`reviewCount` numbers as the source of truth for a
+ * salon's displayed rating the moment at least one real review exists —
+ * see `employeeRating`/`salonRating` in selectors.ts.
+ */
+export interface Review {
+  id: string;
+  appointmentId: string;
+  customerId: string;
+  employeeId: string;
+  serviceId: string;
+  /** 1-5 */
+  rating: number;
+  comment?: string;
+  createdAt: string;
 }
 
 export interface EmailMessage {

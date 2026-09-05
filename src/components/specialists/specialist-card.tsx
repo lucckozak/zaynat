@@ -3,17 +3,20 @@
 import Link from "next/link";
 import { Star } from "lucide-react";
 import type { Employee, User } from "@/lib/types";
+import type { RatingSummary } from "@/lib/selectors";
 import { cn, fullName } from "@/lib/utils";
 import { SmartImage } from "@/components/ui/smart-image";
 
 export function SpecialistCard({
   employee,
   user,
+  rating,
   serviceCount,
   className,
 }: {
   employee: Employee;
   user: User;
+  rating: RatingSummary;
   serviceCount?: number;
   className?: string;
 }) {
@@ -40,11 +43,11 @@ export function SpecialistCard({
           {employee.bio}
         </p>
         <div className="mt-4 flex items-center justify-between text-xs text-muted-strong">
-          {employee.rating ? (
+          {rating.average != null ? (
             <span className="inline-flex items-center gap-1">
               <Star size={13} className="fill-accent text-accent" />
-              {employee.rating.toFixed(1)}
-              <span className="text-muted">({employee.reviewCount})</span>
+              {rating.average.toFixed(1)}
+              {rating.count > 0 ? <span className="text-muted">({rating.count})</span> : null}
             </span>
           ) : (
             <span className="text-muted">New to the team</span>

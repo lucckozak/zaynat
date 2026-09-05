@@ -1,6 +1,7 @@
 "use client";
 
 import { useStore } from "@/lib/store";
+import { employeeRating } from "@/lib/selectors";
 import { SectionTitle } from "@/components/ui/card";
 import { SpecialistCard } from "@/components/specialists/specialist-card";
 import { HydrationGate } from "@/components/hydration-gate";
@@ -24,6 +25,7 @@ function EmployeesInner() {
               key={e.id}
               employee={e}
               user={user}
+              rating={employeeRating(db, e.id)}
               serviceCount={e.serviceIds.length}
             />
           );

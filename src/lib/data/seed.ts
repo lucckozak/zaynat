@@ -6,6 +6,7 @@ import type {
   EmailMessage,
   Employee,
   RecurringBreak,
+  Review,
   Service,
   TimeBlock,
   User,
@@ -31,7 +32,11 @@ import {
 } from "./catalog";
 import { getPreset, type SalonPreset } from "./presets";
 
-const STORAGE_VERSION = 7;
+// Bump whenever the Database shape changes (e.g. a new field like
+// `reviews`) — a mismatch makes loadDatabase() return null so every
+// tenant regenerates fresh seed data instead of crashing on old,
+// now-incomplete cached JSON.
+const STORAGE_VERSION = 8;
 
 const ADMIN_USER = STAFF_USERS.find((u) => u.role === "ADMIN")!;
 
@@ -172,6 +177,7 @@ export function emptyDatabase(presetId?: string): Database {
     emailLog: [],
     coupons: [],
     giftCards: [],
+    reviews: [],
   };
 }
 
@@ -332,6 +338,7 @@ export function generateSeedDatabase(
   seedBirthdays(db, now);
   seedPromotions(db, now);
   db.emailLog = seedEmailLog(db, now);
+  db.reviews = seedReviews(db, rnd);
   return db;
 }
 
@@ -439,6 +446,46 @@ function seedPromotions(db: Database, now: Date) {
       createdAt: addDays(now, -20).toISOString(),
     },
   ];
+}
+
+const REVIEW_COMMENTS = [
+  "Absolutely loved it — will be back!",
+  "Professional, relaxing, and my skin has never looked better.",
+  "Great experience from start to finish.",
+  "Really happy with the result, highly recommend.",
+  "Friendly staff and a lovely space.",
+  "Exactly what I needed — very skilled hands.",
+  undefined, // a plain star rating with no written comment, same as real life
+  undefined,
+];
+
+/**
+ * A handful of real-shaped reviews for the demo's own completed
+ * appointments — not every customer leaves one, same as real life. Same
+ * seeded RNG as the rest of this file, so this is demo/seed data like
+ * everything else here, not a stand-in for the real review system: it
+ * goes through the exact same `Review` shape a genuine submission does
+ * (see `addReview` in store.tsx), it's just auto-generated instead of
+ * customer-submitted.
+ */
+function seedReviews(db: Database, rnd: () => number): Review[] {
+  const reviews: Review[] = [];
+  for (const appt of db.appointments) {
+    if (appt.status !== "COMPLETED") continue;
+    if (rnd() > 0.4) continue;
+    const rating = rnd() < 0.75 ? 5 : rnd() < 0.7 ? 4 : 3;
+    reviews.push({
+      id: `rev_seed_${reviews.length + 1}`,
+      appointmentId: appt.id,
+      customerId: appt.customerId,
+      employeeId: appt.employeeId,
+      serviceId: appt.serviceId,
+      rating,
+      comment: REVIEW_COMMENTS[Math.floor(rnd() * REVIEW_COMMENTS.length)],
+      createdAt: addDays(new Date(appt.end), 1 + Math.floor(rnd() * 3)).toISOString(),
+    });
+  }
+  return reviews;
 }
 
 function seedEmailLog(db: Database, now: Date): EmailMessage[] {

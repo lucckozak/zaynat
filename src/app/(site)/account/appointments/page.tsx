@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarPlus } from "lucide-react";
+import { CalendarPlus, Star } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useStore } from "@/lib/store";
 import {
@@ -10,11 +10,13 @@ import {
   upcomingAppointments,
   viewAppointment,
 } from "@/lib/selectors";
+import { fullName } from "@/lib/utils";
 import { Segmented, EmptyState } from "@/components/ui/misc";
 import { Button, LinkButton } from "@/components/ui/button";
 import { AppointmentCard } from "@/components/appointments/appointment-card";
 import { RescheduleDialog } from "@/components/appointments/reschedule-dialog";
 import { CancelDialog } from "@/components/appointments/cancel-dialog";
+import { ReviewDialog } from "@/components/appointments/review-dialog";
 
 export default function CustomerAppointmentsPage() {
   const { user } = useAuth();
@@ -22,6 +24,7 @@ export default function CustomerAppointmentsPage() {
   const [tab, setTab] = useState<"upcoming" | "past">("upcoming");
   const [rescheduleId, setRescheduleId] = useState<string | null>(null);
   const [cancelId, setCancelId] = useState<string | null>(null);
+  const [reviewId, setReviewId] = useState<string | null>(null);
 
   if (!user) return null;
 
@@ -104,6 +107,16 @@ export default function CustomerAppointmentsPage() {
                       Within {db.settings.cancellationWindowHours}h of the
                       appointment — please call the salon to make changes.
                     </p>
+                  ) : a.status === "COMPLETED" ? (
+                    db.reviews.some((r) => r.appointmentId === a.id) ? (
+                      <p className="inline-flex items-center gap-1.5 text-xs text-muted">
+                        <Star size={13} className="fill-accent text-accent" /> You reviewed this visit
+                      </p>
+                    ) : (
+                      <Button variant="outline" size="sm" onClick={() => setReviewId(a.id)}>
+                        <Star size={14} /> Leave a review
+                      </Button>
+                    )
                   ) : null
                 }
               />
@@ -121,6 +134,21 @@ export default function CustomerAppointmentsPage() {
         appointmentId={cancelId}
         open={!!cancelId}
         onClose={() => setCancelId(null)}
+      />
+      <ReviewDialog
+        appointmentId={reviewId}
+        employeeName={
+          reviewId
+            ? (() => {
+                const appt = db.appointments.find((x) => x.id === reviewId);
+                const emp = appt && db.employees.find((e) => e.id === appt.employeeId);
+                const empUser = emp && db.users.find((u) => u.id === emp.userId);
+                return empUser ? fullName(empUser) : undefined;
+              })()
+            : undefined
+        }
+        open={!!reviewId}
+        onClose={() => setReviewId(null)}
       />
     </div>
   );

@@ -9,6 +9,7 @@ import {
   Star,
 } from "lucide-react";
 import { useStore } from "@/lib/store";
+import { salonRating, employeeRating } from "@/lib/selectors";
 import { fullName } from "@/lib/utils";
 import { LinkButton } from "@/components/ui/button";
 import { SectionTitle } from "@/components/ui/card";
@@ -48,6 +49,7 @@ export default function HomePage() {
     ? popular
     : db.services.filter((s) => s.active).slice(0, 6);
   const team = db.employees.filter((e) => e.active).slice(0, 4);
+  const rating = salonRating(db);
 
   return (
     <div>
@@ -73,10 +75,12 @@ export default function HomePage() {
               </LinkButton>
             </div>
             <div className="mt-8 flex items-center gap-6 text-sm text-muted">
-              <span className="inline-flex items-center gap-2">
-                <Star size={15} className="fill-accent text-accent" /> 4.8 average
-                rating
-              </span>
+              {rating.average != null ? (
+                <span className="inline-flex items-center gap-2">
+                  <Star size={15} className="fill-accent text-accent" />
+                  {rating.average.toFixed(1)} average rating
+                </span>
+              ) : null}
               <span className="inline-flex items-center gap-2">
                 <Clock3 size={15} /> Open 7 days
               </span>
@@ -147,6 +151,7 @@ export default function HomePage() {
                       key={e.id}
                       employee={e}
                       user={user}
+                      rating={employeeRating(db, e.id)}
                       serviceCount={e.serviceIds.length}
                     />
                   );

@@ -5,8 +5,10 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Clock3, Star } from "lucide-react";
 import { useStore } from "@/lib/store";
+import { employeeRating, reviewsForEmployee } from "@/lib/selectors";
 import { fullName, formatDuration, formatPrice } from "@/lib/utils";
 import { DAY_LABELS } from "@/lib/types";
+import { fmt } from "@/lib/time";
 import { SmartImage } from "@/components/ui/smart-image";
 import { LinkButton } from "@/components/ui/button";
 import { HydrationGate } from "@/components/hydration-gate";
@@ -41,6 +43,8 @@ function ProfileInner() {
   const hours = db.workingHours
     .filter((w) => w.employeeId === employee.id)
     .sort((a, b) => ((a.dayOfWeek + 6) % 7) - ((b.dayOfWeek + 6) % 7));
+  const rating = employeeRating(db, employee.id);
+  const reviews = reviewsForEmployee(db, employee.id);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">
@@ -78,10 +82,11 @@ function ProfileInner() {
             {fullName(user)}
           </h1>
           <p className="mt-1 text-accent">{employee.jobTitle}</p>
-          {employee.rating ? (
+          {rating.average != null ? (
             <p className="mt-2 inline-flex items-center gap-1.5 text-sm text-muted-strong">
               <Star size={14} className="fill-accent text-accent" />
-              {employee.rating.toFixed(1)} · {employee.reviewCount} reviews
+              {rating.average.toFixed(1)}
+              {rating.count > 0 ? ` · ${rating.count} review${rating.count === 1 ? "" : "s"}` : null}
             </p>
           ) : null}
           <p className="mt-5 max-w-prose text-[15px] leading-relaxed text-muted-strong">
@@ -143,6 +148,47 @@ function ProfileInner() {
           <div className="mt-3">
             <AvailabilityExplorer employeeId={employee.id} />
           </div>
+
+          {reviews.length > 0 ? (
+            <>
+              <h2 className="mt-8 text-lg font-medium text-foreground">
+                What customers say
+              </h2>
+              <div className="mt-3 space-y-3">
+                {reviews.slice(0, 6).map(({ review, customer }) => (
+                  <div
+                    key={review.id}
+                    className="rounded-xl border border-border bg-surface px-4 py-3.5"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star
+                            key={i}
+                            size={13}
+                            className={
+                              i < review.rating
+                                ? "fill-accent text-accent"
+                                : "text-border-strong"
+                            }
+                          />
+                        ))}
+                      </div>
+                      <span className="text-xs text-muted">
+                        {customer ? customer.firstName : "A customer"} ·{" "}
+                        {fmt.mediumDate(review.createdAt)}
+                      </span>
+                    </div>
+                    {review.comment ? (
+                      <p className="mt-2 text-sm leading-relaxed text-muted-strong">
+                        {review.comment}
+                      </p>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : null}
         </div>
       </div>
     </div>

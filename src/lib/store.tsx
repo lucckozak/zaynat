@@ -19,6 +19,7 @@ import type {
   Employee,
   GiftCard,
   RecurringBreak,
+  Review,
   SalonSettings,
   Service,
   TimeBlock,
@@ -88,6 +89,15 @@ interface StoreValue {
     reason?: string,
   ) => void;
   cancelAppointment: (id: string, reason?: string) => void;
+
+  // reviews — only ever created for an appointment the reviewing customer
+  // actually had, once it's COMPLETED (enforced here, not just in the UI)
+  addReview: (input: {
+    appointmentId: string;
+    customerId: string;
+    rating: number;
+    comment?: string;
+  }) => { ok: boolean; error?: string };
 
   // services
   saveService: (svc: Service) => void;
@@ -368,6 +378,32 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           if (appt) notifyBooking(next, appt, "CANCELLATION");
           return next;
         }),
+
+      addReview: (input) => {
+        const appt = safeDb.appointments.find((a) => a.id === input.appointmentId);
+        if (!appt) return { ok: false, error: "Appointment not found." };
+        if (appt.customerId !== input.customerId)
+          return { ok: false, error: "This isn't your appointment." };
+        if (appt.status !== "COMPLETED")
+          return { ok: false, error: "You can only review a completed appointment." };
+        if (safeDb.reviews.some((r) => r.appointmentId === appt.id))
+          return { ok: false, error: "You've already reviewed this appointment." };
+        if (!Number.isFinite(input.rating) || input.rating < 1 || input.rating > 5)
+          return { ok: false, error: "Rating must be between 1 and 5." };
+
+        const review: Review = {
+          id: uid("rev"),
+          appointmentId: appt.id,
+          customerId: input.customerId,
+          employeeId: appt.employeeId,
+          serviceId: appt.serviceId,
+          rating: Math.round(input.rating),
+          comment: input.comment?.trim() || undefined,
+          createdAt: new Date().toISOString(),
+        };
+        mutate((prev) => ({ ...prev, reviews: [...prev.reviews, review] }));
+        return { ok: true };
+      },
 
       saveService: (svc) =>
         mutate((prev) => ({
@@ -693,6 +729,7 @@ const EMPTY: Database = {
   emailLog: [],
   coupons: [],
   giftCards: [],
+  reviews: [],
   settings: {
     name: "",
     tagline: "",

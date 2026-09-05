@@ -130,6 +130,51 @@ export function customerStats(db: Database, customerId: string) {
   };
 }
 
+export interface RatingSummary {
+  average: number | null;
+  count: number;
+  /** true once at least one real review exists, vs. falling back to seed data */
+  isReal: boolean;
+}
+
+/**
+ * A specialist's real rating, computed from actual submitted reviews
+ * (see `Review`/`addReview`) — never fabricated. Falls back to the
+ * seeded `Employee.rating`/`reviewCount` display numbers only while zero
+ * real reviews exist yet, so a brand-new demo salon doesn't look broken;
+ * the moment a first real review lands, this switches over for good.
+ */
+export function employeeRating(db: Pick<Database, "reviews" | "employees">, employeeId: string): RatingSummary {
+  const real = db.reviews.filter((r) => r.employeeId === employeeId);
+  if (real.length > 0) {
+    const average = real.reduce((s, r) => s + r.rating, 0) / real.length;
+    return { average: Math.round(average * 10) / 10, count: real.length, isReal: true };
+  }
+  const emp = db.employees.find((e) => e.id === employeeId);
+  return { average: emp?.rating ?? null, count: emp?.reviewCount ?? 0, isReal: false };
+}
+
+/** Salon-wide rating across every real review, regardless of specialist. */
+export function salonRating(db: Pick<Database, "reviews" | "employees">): RatingSummary {
+  if (db.reviews.length > 0) {
+    const average = db.reviews.reduce((s, r) => s + r.rating, 0) / db.reviews.length;
+    return { average: Math.round(average * 10) / 10, count: db.reviews.length, isReal: true };
+  }
+  const seeded = db.employees.filter((e) => e.rating != null);
+  if (seeded.length === 0) return { average: null, count: 0, isReal: false };
+  const average = seeded.reduce((s, e) => s + (e.rating ?? 0), 0) / seeded.length;
+  const count = seeded.reduce((s, e) => s + (e.reviewCount ?? 0), 0);
+  return { average: Math.round(average * 10) / 10, count, isReal: false };
+}
+
+/** Real reviews for one specialist, most recent first. */
+export function reviewsForEmployee(db: Pick<Database, "reviews" | "users">, employeeId: string) {
+  return db.reviews
+    .filter((r) => r.employeeId === employeeId)
+    .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt))
+    .map((r) => ({ review: r, customer: db.users.find((u) => u.id === r.customerId) }));
+}
+
 /** Customers whose birthday (month + day) falls on `now`. */
 export function todaysBirthdays(db: Database, now: Date = new Date()): User[] {
   const m = now.getMonth();
