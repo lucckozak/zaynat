@@ -67,12 +67,6 @@ function LoginInner() {
           </Button>
         </form>
       </div>
-      <div className="mt-6 rounded-2xl border border-dashed border-border-strong bg-surface-muted p-4 text-center">
-        <p className="text-xs font-medium text-muted-strong">
-          Demo account: <code className="rounded bg-surface-sunken px-1.5 py-0.5">platform@admin.app</code>{" "}
-          / <code className="rounded bg-surface-sunken px-1.5 py-0.5">password</code>
-        </p>
-      </div>
     </div>
   );
 }
