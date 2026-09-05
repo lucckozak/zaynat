@@ -32,6 +32,28 @@ export function PricingToggle({ plans }: { plans: SubscriptionPlanConfig[] }) {
             period === "annual"
               ? Math.round(p.monthlyPriceAed * (1 - ANNUAL_DISCOUNT))
               : p.monthlyPriceAed;
+
+          const bullets: { included: boolean; label: string }[] = [
+            {
+              included: true,
+              label: `Up to ${p.employeeLimit >= 999 ? "unlimited" : p.employeeLimit} employees`,
+            },
+            {
+              included: true,
+              label:
+                p.salonLimit >= 999
+                  ? "Unlimited salons"
+                  : `Up to ${p.salonLimit} salon${p.salonLimit > 1 ? "s" : ""}`,
+            },
+            { included: true, label: "Online booking & calendar" },
+            { included: true, label: "Employee dashboards & schedules" },
+            { included: true, label: "Deposits & online payments" },
+            { included: true, label: "Marketing tools — coupons & gift cards" },
+            { included: p.marketplaceVisibility, label: "Marketplace visibility" },
+            { included: p.customDomain, label: "Custom domain" },
+            { included: p.prioritySupport, label: "Priority support" },
+          ];
+
           return (
             <Card key={p.id} className={p.id === "professional" ? "border-primary" : undefined}>
               <CardBody>
@@ -51,30 +73,16 @@ export function PricingToggle({ plans }: { plans: SubscriptionPlanConfig[] }) {
                   <p className="text-xs text-muted">billed annually</p>
                 ) : null}
                 <ul className="mt-4 space-y-2 text-sm text-muted">
-                  <li className="flex items-center gap-2">
-                    <Check size={15} className="shrink-0 text-success" />
-                    Up to {p.employeeLimit >= 999 ? "unlimited" : p.employeeLimit} employees
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check size={15} className="shrink-0 text-success" />
-                    Online booking & calendar
-                  </li>
-                  <li className="flex items-center gap-2">
-                    {p.marketplaceVisibility ? (
-                      <Check size={15} className="shrink-0 text-success" />
-                    ) : (
-                      <span className="h-[15px] w-[15px] shrink-0" />
-                    )}
-                    Marketplace visibility
-                  </li>
-                  <li className="flex items-center gap-2">
-                    {p.customDomain ? (
-                      <Check size={15} className="shrink-0 text-success" />
-                    ) : (
-                      <span className="h-[15px] w-[15px] shrink-0" />
-                    )}
-                    Custom domain
-                  </li>
+                  {bullets.map((b) => (
+                    <li key={b.label} className="flex items-center gap-2">
+                      {b.included ? (
+                        <Check size={15} className="shrink-0 text-success" />
+                      ) : (
+                        <span className="h-[15px] w-[15px] shrink-0" />
+                      )}
+                      {b.label}
+                    </li>
+                  ))}
                 </ul>
               </CardBody>
             </Card>

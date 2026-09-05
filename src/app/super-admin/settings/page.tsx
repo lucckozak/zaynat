@@ -43,12 +43,20 @@ export default function SuperAdminSettingsPage() {
                   onChange={(e) => set(p.id, { monthlyPriceAed: Number(e.target.value) || 0 })}
                 />
               </Field>
-              <Field label="Employee limit">
+              <Field label="Employee limit" hint="999+ displays as unlimited.">
                 <Input
                   type="number"
                   min={1}
                   value={p.employeeLimit}
                   onChange={(e) => set(p.id, { employeeLimit: Number(e.target.value) || 1 })}
+                />
+              </Field>
+              <Field label="Salon limit" hint="How many salons one owner can run on this plan. 999+ displays as unlimited.">
+                <Input
+                  type="number"
+                  min={1}
+                  value={p.salonLimit}
+                  onChange={(e) => set(p.id, { salonLimit: Number(e.target.value) || 1 })}
                 />
               </Field>
               <Switch
@@ -60,6 +68,11 @@ export default function SuperAdminSettingsPage() {
                 checked={p.customDomain}
                 onChange={(v) => set(p.id, { customDomain: v })}
                 label="Custom domain"
+              />
+              <Switch
+                checked={p.prioritySupport}
+                onChange={(v) => set(p.id, { prioritySupport: v })}
+                label="Priority support"
               />
             </CardBody>
           </Card>

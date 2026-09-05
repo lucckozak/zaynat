@@ -5,6 +5,7 @@ import {
   CalendarClock,
   CreditCard,
   LayoutDashboard,
+  UserCog,
   UsersRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -33,6 +34,13 @@ const TABS = [
     icon: UsersRound,
     title: "Every client, their whole history",
     body: "Notes, preferred specialist, past visits and birthdays — searchable in seconds from any device.",
+  },
+  {
+    id: "staff",
+    label: "Staff",
+    icon: UserCog,
+    title: "Every specialist has their own dashboard",
+    body: "Staff sign in to see just their own schedule, appointments and profile — no admin access, no clutter.",
   },
   {
     id: "payments",
@@ -126,6 +134,17 @@ export function FeatureShowcase() {
                     <Badge tone="neutral">12 visits</Badge>
                   </div>
                 ))}
+              </div>
+            ) : tab.id === "staff" ? (
+              <div className="space-y-3">
+                <div className="rounded-xl border border-border bg-surface px-3 py-2.5">
+                  <p className="text-sm font-medium text-foreground">Sara Ahmed</p>
+                  <p className="text-xs text-muted">Senior Stylist · works 09:00–18:00</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <Stat label="Today" value="5 bookings" tone="primary" compact />
+                  <Stat label="This week" value="AED 3,200" tone="accent" compact />
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3">

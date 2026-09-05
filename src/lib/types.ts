@@ -83,13 +83,23 @@ export interface TenantMeta {
   };
 }
 
+/**
+ * Configurable by the Zaynat team in Super Admin → Settings, shown on the
+ * pricing page. Like employeeLimit already was, none of these limits are
+ * mechanically enforced anywhere in this prototype (there's no concept yet
+ * of one owner identity linked across several salon tenants to check a
+ * count against) — this is the plan's advertised shape, not a gate.
+ */
 export interface SubscriptionPlanConfig {
   id: SubscriptionPlanId;
   label: string;
   monthlyPriceAed: number;
   employeeLimit: number;
+  /** how many separate salons one owner can run on this plan; >=999 displays as "unlimited" (same convention as employeeLimit) */
+  salonLimit: number;
   marketplaceVisibility: boolean;
   customDomain: boolean;
+  prioritySupport: boolean;
 }
 
 export const DEFAULT_SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
@@ -98,24 +108,30 @@ export const DEFAULT_SUBSCRIPTION_PLANS: SubscriptionPlanConfig[] = [
     label: "Starter",
     monthlyPriceAed: 199,
     employeeLimit: 3,
+    salonLimit: 1,
     marketplaceVisibility: false,
     customDomain: false,
+    prioritySupport: false,
   },
   {
     id: "professional",
     label: "Professional",
     monthlyPriceAed: 299,
     employeeLimit: 10,
+    salonLimit: 3,
     marketplaceVisibility: true,
     customDomain: false,
+    prioritySupport: false,
   },
   {
     id: "premium",
     label: "Premium",
     monthlyPriceAed: 499,
     employeeLimit: 999,
+    salonLimit: 999,
     marketplaceVisibility: true,
     customDomain: true,
+    prioritySupport: true,
   },
 ];
 

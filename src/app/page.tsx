@@ -3,10 +3,15 @@ import {
   BarChart3,
   CalendarCheck2,
   CreditCard,
+  FileDown,
   Globe2,
+  Link2,
+  ShieldAlert,
   ShieldCheck,
   Sparkles,
   Store,
+  Tag,
+  UserCog,
   UsersRound,
 } from "lucide-react";
 import { DEFAULT_SUBSCRIPTION_PLANS } from "@/lib/types";
@@ -43,7 +48,12 @@ const FEATURES = [
   {
     icon: UsersRound,
     title: "Staff & client management",
-    body: "Working hours, days off, commission and their own logins for staff; history, notes and birthdays for clients.",
+    body: "Working hours, days off and commission for staff; history, notes and birthdays for clients.",
+  },
+  {
+    icon: UserCog,
+    title: "Employee dashboard",
+    body: "Every specialist gets their own login — just their schedule, their appointments, their working hours and profile.",
   },
   {
     icon: CreditCard,
@@ -51,14 +61,29 @@ const FEATURES = [
     body: "Deposits or full payment via your own connected account — Zaynat never takes a cut and never touches the money.",
   },
   {
-    icon: Globe2,
+    icon: Tag,
+    title: "Marketing tools built in",
+    body: "Coupons, gift cards and automatic birthday greetings — no separate marketing app to pay for.",
+  },
+  {
+    icon: BarChart3,
+    title: "Revenue & commission reports",
+    body: "Revenue, no-shows and popular services at the salon level; per-specialist commission payouts underneath.",
+  },
+  {
+    icon: Link2,
     title: "Custom domains",
     body: "Start on a Zaynat address the same day; connect www.yoursalon.ae whenever you're ready.",
   },
   {
-    icon: BarChart3,
-    title: "Analytics that matter",
-    body: "Revenue, no-shows, popular services and specialists — know what's actually working.",
+    icon: ShieldAlert,
+    title: "No-show protection",
+    body: "Blacklist repeat no-shows, require deposits, and enforce your own cancellation window automatically.",
+  },
+  {
+    icon: FileDown,
+    title: "Your data, exportable",
+    body: "Export customers and bookings to CSV whenever you want — nothing is locked inside Zaynat.",
   },
   {
     icon: Store,
