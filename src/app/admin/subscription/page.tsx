@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Ban,
   CircleSlash,
@@ -217,14 +218,14 @@ export default function SubscriptionPage() {
                 <Button variant="outline" size="sm" onClick={() => setSuspendOpen(true)}>
                   <Ban size={14} /> Suspend subscription
                 </Button>
-                <a
+                <Link
                   href={`/site?salon=${tenant.slug}`}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
                 >
                   <ExternalLink size={13} /> View your site
-                </a>
+                </Link>
               </div>
             ) : (
               <Button size="sm" onClick={makeLive}>

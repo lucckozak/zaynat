@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Globe2, Percent, ShieldCheck, Sparkles } from "lucide-react";
 import { BRAND_NAME } from "@/lib/brand";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
@@ -77,9 +78,9 @@ export default function AboutPage() {
             and branding across UAE salons. Online payments, marketplace
             discovery, deeper analytics and more integrations are actively on
             the roadmap — see the{" "}
-            <a href="/legal" className="font-medium text-primary hover:text-primary-hover">
+            <Link href="/legal" className="font-medium text-primary hover:text-primary-hover">
               Legal
-            </a>{" "}
+            </Link>{" "}
             page for exactly what&apos;s live today versus what&apos;s coming.
           </p>
           <div className="mt-8 flex justify-center">

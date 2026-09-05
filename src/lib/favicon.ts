@@ -24,7 +24,9 @@
  * the tab's CPU. Caught this by watching the tab actually hang, not by
  * inspection — worth remembering if this file changes again.
  */
-const DEFAULT_HREF = "/favicon.ico";
+import { BASE_PATH } from "./base-path";
+
+const DEFAULT_HREF = `${BASE_PATH}/favicon.ico`;
 const REASSERT_WINDOW_MS = 4000;
 
 let observer: MutationObserver | null = null;

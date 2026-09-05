@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Ban,
@@ -103,14 +104,14 @@ function SalonDetailInner() {
         description={`${meta.area}, ${meta.emirate}`}
         action={
           <div className="flex items-center gap-2">
-            <a
+            <Link
               href={`/site?salon=${meta.slug}`}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-1.5 rounded-full border border-border px-3.5 py-2 text-xs font-medium text-foreground hover:border-primary/50"
             >
               <ExternalLink size={13} /> View site
-            </a>
+            </Link>
             {meta.suspension.suspended ? (
               <Button
                 variant="outline"
